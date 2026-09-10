@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/config"
-	ddinternal "github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/datadog"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
+	ddinternal "github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datadog"
 )
 
 func runSource(t *testing.T, ts *httptest.Server, ds DataSource, cfg *config.Config) (Result, error) {

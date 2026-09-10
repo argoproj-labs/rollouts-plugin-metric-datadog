@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/plugin"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/plugin"
 
 	rolloutsPlugin "github.com/argoproj/argo-rollouts/metricproviders/plugin/rpc"
 	goPlugin "github.com/hashicorp/go-plugin"

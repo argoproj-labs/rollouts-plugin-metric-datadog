@@ -1,4 +1,4 @@
-module github.com/mubarak-j/rollouts-plugin-metric-datadog
+module github.com/argoproj-labs/rollouts-plugin-metric-datadog
 
 go 1.26.0
 

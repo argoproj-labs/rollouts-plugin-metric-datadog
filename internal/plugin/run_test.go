@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
+	ddinternal "github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datadog"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datasource"
 	"github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1"
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/config"
-	ddinternal "github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/datadog"
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/datasource"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
