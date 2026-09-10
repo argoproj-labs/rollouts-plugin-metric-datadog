@@ -1,5 +1,5 @@
 BINARY := rollouts-plugin-metric-datadog
-PLUGIN_PATH := mubarak-j/rollouts-plugin-metric-datadog
+PLUGIN_PATH := argoproj-labs/rollouts-plugin-metric-datadog
 DIST := dist
 
 .PHONY: build release test vet tidy

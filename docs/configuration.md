@@ -1,6 +1,6 @@
 # Configuration Reference
 
-Every metric in an AnalysisTemplate that uses this plugin is configured under the plugin key `mubarak-j/rollouts-plugin-metric-datadog`. Exactly one of the three source blocks (`metrics`, `monitor`, `slo`) must be present per metric entry.
+Every metric in an AnalysisTemplate that uses this plugin is configured under the plugin key `argoproj-labs/rollouts-plugin-metric-datadog`. Exactly one of the three source blocks (`metrics`, `monitor`, `slo`) must be present per metric entry.
 
 ---
 
@@ -9,7 +9,7 @@ Every metric in an AnalysisTemplate that uses this plugin is configured under th
 ```yaml
 provider:
   plugin:
-    mubarak-j/rollouts-plugin-metric-datadog:
+    argoproj-labs/rollouts-plugin-metric-datadog:
       # --- Connection ---
       site: "datadoghq.com"          # Datadog site (see Site Values below). Default: datadoghq.com
       address: ""                    # Full URL override (https://...). Wins over site when set.
