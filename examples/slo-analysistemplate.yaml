@@ -9,7 +9,7 @@ spec:
       failureLimit: 2
       provider:
         plugin:
-          mubarak-j/rollouts-plugin-metric-datadog:
+          argoproj-labs/rollouts-plugin-metric-datadog:
             tags: ["service:my-cool-service", "env:production"]
             slo: {}
       failureCondition: "any(result.slos, {any(.overall_status, {.state == 'breached'})})"

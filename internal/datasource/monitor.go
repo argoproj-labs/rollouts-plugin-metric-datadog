@@ -6,7 +6,7 @@ import (
 
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	datadogV1 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/config"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
 )
 
 type monitorSource struct{}
