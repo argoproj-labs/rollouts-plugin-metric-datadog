@@ -82,6 +82,10 @@ go test ./internal/datasource -run TestMetrics -race -count=1
 docker build -t rollouts-plugin-metric-datadog .
 ```
 
+### Every commit needs a DCO sign-off
+
+The DCO check blocks any PR containing a commit without a `Signed-off-by:` trailer matching its author. Commit with `git commit -s`, or run `git config core.hooksPath .githooks` once and let `.githooks/prepare-commit-msg` add it for you.
+
 ### Never run `go mod tidy` casually
 
 `go mod tidy` strips `github.com/DataDog/zstd` (a cgo-only transitive dep), which breaks the `-race` build. If you must tidy, restore it immediately:

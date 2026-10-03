@@ -18,9 +18,9 @@ import (
 	timeutil "github.com/argoproj/argo-rollouts/utils/time"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/config"
-	ddinternal "github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/datadog"
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/datasource"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
+	ddinternal "github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datadog"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datasource"
 )
 
 // RpcPlugin implements rpc.MetricProviderPlugin for Datadog.

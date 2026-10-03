@@ -11,7 +11,7 @@ import (
 
 // ConfigKey is the plugin name used as the map key in metric.Provider.Plugin
 // and as provider.plugin.<name> in AnalysisTemplates.
-const ConfigKey = "mubarak-j/rollouts-plugin-metric-datadog"
+const ConfigKey = "argoproj-labs/rollouts-plugin-metric-datadog"
 
 type Config struct {
 	Site           string       `json:"site,omitempty"`

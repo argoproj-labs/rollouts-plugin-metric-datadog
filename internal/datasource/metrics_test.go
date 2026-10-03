@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/config"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

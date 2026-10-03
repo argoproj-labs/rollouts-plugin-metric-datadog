@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
 	"github.com/argoproj/argo-rollouts/pkg/apis/rollouts/v1alpha1"
 	"github.com/argoproj/argo-rollouts/utils/evaluate"
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/config"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

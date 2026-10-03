@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mubarak-j/rollouts-plugin-metric-datadog/internal/config"
+	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
 	"github.com/stretchr/testify/assert"
 )
 

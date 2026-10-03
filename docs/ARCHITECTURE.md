@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-18
 **Status:** Design — approved for spec review
-**Upstream repo:** `github.com/mubarak-j/rollouts-plugin-metric-datadog` (internal, for now)
+**Upstream repo:** `github.com/argoproj-labs/rollouts-plugin-metric-datadog`
 
 ## 1. Summary
 
@@ -152,9 +152,9 @@ avoid hand-rolling structs and parsing across ~7 heterogeneous endpoints.
   ```yaml
   data:
     metricProviderPlugins: |-
-      - name: "mubarak-j/rollouts-plugin-metric-datadog"
-        location: "file://./plugin-bin/mubarak-j/rollouts-plugin-metric-datadog"
-        # or location: "https://github.com/mubarak-j/rollouts-plugin-metric-datadog/releases/download/vX/...-linux-amd64"
+      - name: "argoproj-labs/rollouts-plugin-metric-datadog"
+        location: "file://./plugin-bin/argoproj-labs/rollouts-plugin-metric-datadog"
+        # or location: "https://github.com/argoproj-labs/rollouts-plugin-metric-datadog/releases/download/vX/...-linux-amd64"
         #    sha256: "<hex>"
   ```
   The binary is resolved under `<cwd>/plugin-bin/<namespace>/<name>`. Two install
@@ -162,7 +162,7 @@ avoid hand-rolling structs and parsing across ~7 heterogeneous endpoints.
   or (2) `https://` location with `sha256` verification at controller startup.
 - The plugin **name in the ConfigMap must equal the map key** used in
   `provider.plugin.<name>` in AnalysisTemplates. The canonical name is
-  `mubarak-j/rollouts-plugin-metric-datadog`; operators may alias it.
+  `argoproj-labs/rollouts-plugin-metric-datadog`; operators may alias it.
 
 ### 4.4 Argo Rollouts version compatibility
 The plugin imports argo-rollouts packages (`v1alpha1`, `utils/evaluate`,
@@ -178,7 +178,7 @@ handshake failure in the controller log at plugin startup.
 ## 5. Configuration schema
 
 Config is schemaless from the CRD's perspective: the plugin receives
-`metric.Provider.Plugin["mubarak-j/rollouts-plugin-metric-datadog"]` as raw
+`metric.Provider.Plugin["argoproj-labs/rollouts-plugin-metric-datadog"]` as raw
 JSON and unmarshals it into its own struct.
 
 ### 5.1 Top-level shape (per-source nested blocks)
@@ -186,7 +186,7 @@ JSON and unmarshals it into its own struct.
 ```yaml
 provider:
   plugin:
-    mubarak-j/rollouts-plugin-metric-datadog:
+    argoproj-labs/rollouts-plugin-metric-datadog:
       # --- shared connection (all optional; resolved via the credential chain) ---
       site: "datadoghq.com"          # or datadoghq.eu / us3.datadoghq.com / us5.datadoghq.com / ap1.datadoghq.com / gov
       address: "https://api.datadoghq.com"   # optional full-URL override (built-in compat)
@@ -448,7 +448,7 @@ spec:
       failureLimit: 2
       provider:
         plugin:
-          mubarak-j/rollouts-plugin-metric-datadog:
+          argoproj-labs/rollouts-plugin-metric-datadog:
             tags: ["service:my-cool-service", "env:production"]
             monitor: {}
       failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
@@ -457,7 +457,7 @@ spec:
       failureLimit: 2
       provider:
         plugin:
-          mubarak-j/rollouts-plugin-metric-datadog:
+          argoproj-labs/rollouts-plugin-metric-datadog:
             tags: ["service:my-cool-service", "env:production"]
             slo: {}
       failureCondition: "any(result.slos, {any(.overall_status, {.state == 'breached'})})"
@@ -472,8 +472,8 @@ genuine cross-source AND within a single expression is explicitly out of scope (
 
 ## 11. Repository layout
 
-Repo: `github.com/mubarak-j/rollouts-plugin-metric-datadog` (internal, for now;
-follows the argoproj-labs `<org>/<plugin-name>` naming convention).
+Repo: `github.com/argoproj-labs/rollouts-plugin-metric-datadog` (follows the
+argoproj-labs `<org>/<plugin-name>` naming convention).
 
 ```
 main.go                      # go-plugin handshake + Serve (from sample)

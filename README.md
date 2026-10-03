@@ -30,13 +30,13 @@ Add the plugin to the `argo-rollouts-config` ConfigMap and reference it in an An
 ```yaml
 # ConfigMap
 metricProviderPlugins: |-
-  - name: "mubarak-j/rollouts-plugin-metric-datadog"
-    location: "file://./plugin-bin/mubarak-j/rollouts-plugin-metric-datadog"
+  - name: "argoproj-labs/rollouts-plugin-metric-datadog"
+    location: "file://./plugin-bin/argoproj-labs/rollouts-plugin-metric-datadog"
 
 # AnalysisTemplate metric entry
 provider:
   plugin:
-    mubarak-j/rollouts-plugin-metric-datadog:
+    argoproj-labs/rollouts-plugin-metric-datadog:
       tags: ["service:my-service", "env:production"]
       metrics:
         apiVersion: v2
