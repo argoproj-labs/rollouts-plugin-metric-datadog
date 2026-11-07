@@ -1,6 +1,6 @@
 # rollouts-plugin-metric-datadog
 
-An [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) metric plugin that gates canary and blue-green rollouts on Datadog observability data. Phase 1 supports three sources: **metrics** (v1 and v2 scalar queries with multi-query formulas), **monitor** (group search or by-id), and **SLO** (search or by-id history). The plugin resolves Datadog credentials in-process, merges structured `tags` into queries automatically, and provides shared rate-limiting and short-TTL caching across concurrent rollout waves. Built and tested against Argo Rollouts v1.10.2.
+This is an [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) metric plugin. It gates canary and blue-green rollouts on Datadog observability data. Phase 1 supports three sources: metrics (v1 and v2 scalar queries with multi-query formulas), monitor (group search or by-id), and SLO (search or by-id history). The plugin resolves Datadog credentials in-process. It merges structured `tags` into queries automatically. It also provides shared rate-limiting and short-TTL caching across concurrent rollout waves. We built and tested it against Argo Rollouts v1.10.2.
 
 ## Supported sources (Phase 1)
 
@@ -12,20 +12,20 @@ An [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) metric plugin that
 
 ## Documentation
 
-- [docs/install.md](docs/install.md) — install from a release binary URL; RBAC notes
-- [docs/configuration.md](docs/configuration.md) — full config schema, credential resolution, site values, result shapes
-- [docs/migration-web-provider.md](docs/migration-web-provider.md) — migrating from the built-in `web` provider
+- [Installation](docs/install.md): install from a release binary URL, with RBAC notes
+- [Configuration](docs/configuration.md): full configuration schema, credential resolution, site values, and result shapes
+- [Migrating from the web provider](docs/migration-web-provider.md): move from the built-in `web` provider to this plugin
 
 ## Examples
 
-- [examples/metrics-analysistemplate.yaml](examples/metrics-analysistemplate.yaml) — error-rate gate using v2 multi-query formula
-- [examples/monitor-analysistemplate.yaml](examples/monitor-analysistemplate.yaml) — monitor group search gate
-- [examples/slo-analysistemplate.yaml](examples/slo-analysistemplate.yaml) — SLO search gate
-- [examples/multi-source-analysistemplate.yaml](examples/multi-source-analysistemplate.yaml) — monitors + SLOs combined (OR-of-failures)
+- [examples/metrics-analysistemplate.yaml](examples/metrics-analysistemplate.yaml): error-rate gate using v2 multi-query formula
+- [examples/monitor-analysistemplate.yaml](examples/monitor-analysistemplate.yaml): monitor group search gate
+- [examples/slo-analysistemplate.yaml](examples/slo-analysistemplate.yaml): SLO search gate
+- [examples/multi-source-analysistemplate.yaml](examples/multi-source-analysistemplate.yaml): monitors + SLOs combined (OR-of-failures)
 
 ## Quick start
 
-Add the plugin to the `argo-rollouts-config` ConfigMap and reference it in an AnalysisTemplate:
+Add the plugin to the `argo-rollouts-config` ConfigMap. Then reference it in an AnalysisTemplate:
 
 ```yaml
 # ConfigMap

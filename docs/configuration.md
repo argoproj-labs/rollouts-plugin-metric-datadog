@@ -1,10 +1,10 @@
-# Configuration Reference
+# Configuration reference
 
-Every metric in an AnalysisTemplate that uses this plugin is configured under the plugin key `argoproj-labs/rollouts-plugin-metric-datadog`. Exactly one of the three source blocks (`metrics`, `monitor`, `slo`) must be present per metric entry.
+You configure every metric in an AnalysisTemplate that uses this plugin under the plugin key `argoproj-labs/rollouts-plugin-metric-datadog`. Each metric entry must have exactly one of the three source blocks (`metrics`, `monitor`, `slo`).
 
 ---
 
-## Full Schema
+## Full schema
 
 ```yaml
 provider:
@@ -54,23 +54,23 @@ provider:
 
 ---
 
-## Credential Resolution Order
+## Credential resolution order
 
-Credentials are resolved in this order (first match wins):
+The plugin resolves credentials in this order. The first match wins.
 
-1. **`secretRef.name`** — reads the named Kubernetes Secret. If `namespaced: false` (default), the Secret is read from the controller's namespace. If `namespaced: true`, it is read from the AnalysisRun's namespace.
-2. **Environment variables** — `DD_API_KEY` and `DD_APP_KEY` (both required; `DD_ADDRESS` optional).
-3. **`datadog` Secret in the controller namespace** — a Secret literally named `datadog` in the namespace the controller runs in. The plugin reads it automatically with no additional config.
+1. `secretRef.name`: the plugin reads the named Kubernetes Secret. If `namespaced: false` (default), the plugin reads the Secret from the controller's namespace. If `namespaced: true`, the plugin reads it from the AnalysisRun's namespace.
+2. Environment variables: `DD_API_KEY` and `DD_APP_KEY`. Both are required. `DD_ADDRESS` is optional.
+3. The `datadog` Secret in the controller namespace: a Secret with the literal name `datadog` in the namespace that the controller runs in. The plugin reads it automatically, with no additional configuration.
 
-All Secrets must have `api-key` and `app-key` keys. An optional `address` key overrides the endpoint URL.
+All Secrets must have the `api-key` and `app-key` keys. An optional `address` key overrides the endpoint URL.
 
-**Security note (Fix #3 — secretRef escalation):** Because `secretRef.name` is unrestricted and `namespaced: true` reads from the AnalysisRun's namespace via the controller ServiceAccount, **anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can instruct the controller to read any Secret in that namespace and forward its `api-key`/`app-key` to Datadog.** Operators must treat "can author AnalysisTemplates in namespace N" as equivalent to "can read all Secrets in N", or restrict eligible Secret names by convention, label, or admission policy. See [install.md](install.md#rbac) for details.
+CAUTION: Operators must treat "can author AnalysisTemplates in namespace N" as equivalent to "can read all Secrets in N". As an alternative, restrict the eligible Secret names by convention, label, or admission policy. This is the secretRef escalation risk. The `secretRef.name` value is unrestricted. With `namespaced: true`, the plugin reads from the AnalysisRun's namespace through the controller ServiceAccount. As a result, anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can instruct the controller to read any Secret in that namespace. The controller then forwards the `api-key`/`app-key` of that Secret to Datadog. See [install.md](install.md#rbac) for details.
 
 ---
 
-## Site Values
+## Site values
 
-The `site` field controls the Datadog regional endpoint. Common values:
+The `site` field controls the Datadog regional endpoint. These are the common values:
 
 | Site | Endpoint |
 |---|---|
@@ -81,21 +81,21 @@ The `site` field controls the Datadog regional endpoint. Common values:
 | `ap1.datadoghq.com` | AP1 |
 | `ddog-gov.com` | US1-FED |
 
-Use `address` instead of `site` to route to a custom proxy or local test server.
+To route to a custom proxy or a local test server, use `address` instead of `site`.
 
 ---
 
-## Timeout and Rate-Limit Retry (Fix #5)
+## Timeout and rate-limit retry
 
-`timeoutSeconds` sets the hard per-measurement deadline. The SDK's internal retry timer is bounded to `timeout - timeout/5` so the plugin can observe a clean context cancellation.
+`timeoutSeconds` sets the hard deadline for each measurement. The SDK's internal retry timer is bounded to `timeout - timeout/5`, so the plugin can observe a clean context cancellation.
 
-For `metrics` and `monitor`, a 429 response triggers the SDK to honor the `X-RateLimit-Reset` header, which can be up to ~60 seconds for the `/api/v1/query` endpoint. The retry fires only if time remains within the SDK retry window (`timeout * 4/5`).
+For `metrics` and `monitor`, a 429 response causes the SDK to honor the `X-RateLimit-Reset` header. For the `/api/v1/query` endpoint, this header can be up to ~60 seconds. The retry fires only if time remains within the SDK retry window (`timeout * 4/5`).
 
-**Recommendation:** Set `timeoutSeconds` to at least **60–90 seconds** if you need the header-aware retry to fire before the context deadline. With the default of 30s, the SDK retry window is only 24s — a Reset value near 60s will exhaust the deadline before the retry can run.
+If you need the header-aware retry to fire before the context deadline, set `timeoutSeconds` to at least 60–90 seconds. With the default of 30s, the SDK retry window is only 24s. A Reset value near 60s will exhaust the deadline before the retry can run.
 
 ---
 
-## Metrics Source
+## Metrics source
 
 ```yaml
 metrics:
@@ -109,9 +109,9 @@ metrics:
   interval: "5m"          # Query window width. Default: 5m. Supports Go durations and "Nd" for days.
 ```
 
-Tags in `tags` are merged into the query's `{...}` scope brace (or appended if none). For `query`, the raw string is merged. For `queries`, each named query is merged independently.
+The plugin merges the tags in `tags` into the query's `{...}` scope brace. If the query has no scope brace, the plugin appends the tags. For `query`, the merge applies to the raw string. For `queries`, the merge applies to each named query independently.
 
-**Result shape:** a scalar `float64` (or `nil` if the query returns no data). Use `result` in conditions.
+If the query returns no data, the result is `nil`. Otherwise, the result is a scalar `float64`. Use `result` in conditions.
 
 ```yaml
 successCondition: "result >= 0.95"
@@ -119,11 +119,11 @@ successCondition: "result >= 0.95"
 
 ### Time window semantics
 
-`interval` defines the width of the `[now - interval, now]` window sent to the API. If omitted, the default is 5 minutes. For v1, the window bounds are seconds-precision Unix timestamps; for v2, milliseconds. The window is computed at query time, not cached.
+`interval` defines the width of the `[now - interval, now]` window that the plugin sends to the API. If you omit it, the default is 5 minutes. For v1, the window bounds are seconds-precision Unix timestamps. For v2, they are milliseconds-precision Unix timestamps. The plugin computes the window at query time and does not cache it.
 
 ---
 
-## Monitor Source
+## Monitor source
 
 ```yaml
 monitor:
@@ -131,11 +131,11 @@ monitor:
   id: 12345678            # Integer monitor ID. Switches to by-id mode (tags not allowed with id).
 ```
 
-**Search mode** (no `id`): calls `SearchMonitorGroups` with a query built from `tags` joined with `monitor.query`. Result is the full `SearchMonitorGroupsResponse` marshalled to a map.
+In search mode (no `id`), the plugin calls `SearchMonitorGroups` with a query built from `tags` joined with `monitor.query`. The result is the full `SearchMonitorGroupsResponse` marshalled to a map.
 
-**By-id mode** (`id` set): calls `GetMonitor`. Result is the Monitor object marshalled to a map. Tags must be empty in this mode.
+In by-id mode (`id` set), the plugin calls `GetMonitor`. The result is the Monitor object marshalled to a map. In this mode, tags must be empty.
 
-**Result shape (search):** `map[string]interface{}` matching the Datadog API JSON. The useful path for status rollup is `result.counts.status`, a list of `{name, count}` objects.
+In search mode, the result shape is a `map[string]interface{}` that matches the Datadog API JSON. The useful path for status rollup is `result.counts.status`, a list of `{name, count}` objects.
 
 ```yaml
 failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
@@ -144,7 +144,7 @@ successCondition: "result.counts.status == nil || any(result.counts.status, {.na
 
 ---
 
-## SLO Source
+## SLO source
 
 ```yaml
 slo:
@@ -153,18 +153,18 @@ slo:
   interval: "7d"          # History window for by-id mode. Default: 7d. Supports "Nd" for days.
 ```
 
-**Search mode** (no `id`): calls `SearchSLO` with a query built from `tags` joined with `slo.query`. Result is `{slos: [...], facets: {...}}` where each element of `slos` is the SLO attributes object.
+In search mode (no `id`), the plugin calls `SearchSLO` with a query built from `tags` joined with `slo.query`. The result is `{slos: [...], facets: {...}}`. Each element of `slos` is the SLO attributes object.
 
-**By-id mode** (`id` set): calls `GetSLOHistory` over the configured `interval`. Result is the scalar SLI value (`float64`). Tags must be empty in this mode.
+In by-id mode (`id` set), the plugin calls `GetSLOHistory` over the configured `interval`. The result is the scalar SLI value (`float64`). In this mode, tags must be empty.
 
-**Result shape (search):**
+Result shape in search mode:
 
 ```yaml
 failureCondition: "any(result.slos, {any(.overall_status, {.state == 'breached'})})"
 successCondition: "all(result.slos, {all(.overall_status, {.state != 'breached'})})"
 ```
 
-**Result shape (by-id):** scalar `float64` SLI value.
+In by-id mode, the result shape is a scalar `float64` SLI value.
 
 ```yaml
 successCondition: "result >= 99.9"
@@ -172,42 +172,42 @@ successCondition: "result >= 99.9"
 
 ---
 
-## Result Shape Table
+## Result shape table
 
 | Source | Mode | `result` type | Example condition |
 |---|---|---|---|
 | `metrics` | v1 or v2 | `float64` (nil if no data) | `result >= 0.95` |
-| `monitor` | search | `map` — `result.counts.status[].{name, count}` | `any(result.counts.status, {.name == 'Alert' && .count > 0})` |
-| `monitor` | by-id | `map` — full Monitor JSON | field access per Monitor schema |
-| `slo` | search | `map` — `result.slos[].overall_status[].{state, ...}` | `any(result.slos, {any(.overall_status, {.state == 'breached'})})` |
+| `monitor` | search | `map` with `result.counts.status[].{name, count}` | `any(result.counts.status, {.name == 'Alert' && .count > 0})` |
+| `monitor` | by-id | `map` with the full Monitor JSON | field access per Monitor schema |
+| `slo` | search | `map` with `result.slos[].overall_status[].{state, ...}` | `any(result.slos, {any(.overall_status, {.state == 'breached'})})` |
 | `slo` | by-id | `float64` SLI value | `result >= 99.9` |
 
 ---
 
-## Service-Tag Guidance (Fix #7)
+## Service-tag guidance
 
-Each metric **should** carry a `service:...` tag so the resolved query uniquely identifies the resource being gated. A monitor or SLO search scoped only by `env:production` (or similar broad tags) may match resources across multiple rollouts, causing the shared cache to coalesce results from different services.
+A `service:...` tag on each metric makes the resolved query identify one gated resource. A monitor or SLO search scoped only by `env:production` (or similar broad tags) can match resources across multiple rollouts. If this occurs, the shared cache coalesces results from different services.
 
-The plugin emits a log warning (surfaced by `Config.Warnings()`) when a monitor or SLO source is in search mode and has neither a `service:...` tag nor a per-source `query`. The examples in this repository all use `tags: ["service:my-cool-service", "env:production"]` as the recommended baseline.
+A monitor or SLO source can be in search mode with neither a `service:...` tag nor a per-source `query`. In this case, the plugin emits a log warning. `Config.Warnings()` surfaces this warning. The examples in this repository all use `tags: ["service:my-cool-service", "env:production"]` as the recommended baseline.
 
 ---
 
-## Rate Limit and Cache Defaults
+## Rate limit and cache defaults
 
 | Field | Default | Phase 1 status |
 |---|---|---|
-| `rateLimit.enabled` | `true` | **RESERVED** — not yet wired |
-| `rateLimit.budgetFraction` | `0.5` (applied by limiter at runtime, not by config defaulting) | **RESERVED** — parsed but ignored |
-| `rateLimit.maxConcurrent` | `16` (applied by limiter at runtime, not by config defaulting) | **RESERVED** — parsed but ignored |
-| `rateLimit.buckets` | — | **RESERVED** — parsed but ignored |
-| `cache.enabled` | `true` | **Live** — `false` skips fresh-value TTL read; concurrent identical queries are still coalesced |
-| `cache.ttl` | `30s` | **RESERVED** — parsed but ignored; cache always uses 30s TTL |
-| `retry.maxRetries` | `3` | **Live** — wired to SDK retry count |
-| `timeoutSeconds` | `30` | **Live** |
-| `metrics.apiVersion` | `v2` | **Live** |
-| `metrics.interval` | `5m` | **Live** |
-| `slo.interval` (by-id) | `7d` | **Live** |
+| `rateLimit.enabled` | `true` | RESERVED. Not yet wired. |
+| `rateLimit.budgetFraction` | `0.5` (applied by the limiter at runtime, not by configuration defaulting) | RESERVED. Parsed but ignored. |
+| `rateLimit.maxConcurrent` | `16` (applied by the limiter at runtime, not by configuration defaulting) | RESERVED. Parsed but ignored. |
+| `rateLimit.buckets` | None | RESERVED. Parsed but ignored. |
+| `cache.enabled` | `true` | Live. `false` skips the fresh-value TTL read. The cache still coalesces concurrent identical queries. |
+| `cache.ttl` | `30s` | RESERVED. Parsed but ignored. The cache always uses a 30s TTL. |
+| `retry.maxRetries` | `3` | Live. Wired to the SDK retry count. |
+| `timeoutSeconds` | `30` | Live |
+| `metrics.apiVersion` | `v2` | Live |
+| `metrics.interval` | `5m` | Live |
+| `slo.interval` (by-id) | `7d` | Live |
 
-**Phase 1 reserved knobs:** In Phase 1, `rateLimit.*` (enabled/budgetFraction/maxConcurrent/buckets) and `cache.ttl` are parsed and stored but have no runtime effect. The rate limiter runs with fixed built-in defaults: 10 rps default bucket, 16 max concurrent. The cache TTL is fixed at 30s. These fields are present in the schema so operator configs written today will be forward-compatible when Phase 2 wires them.
+In Phase 1, the plugin parses and stores `rateLimit.*` (enabled/budgetFraction/maxConcurrent/buckets) and `cache.ttl`, but these fields have no runtime effect. The rate limiter runs with fixed built-in defaults: 10 rps default bucket, 16 max concurrent. The cache TTL is fixed at 30s. These fields are present in the schema so that operator configurations written today will be forward-compatible when Phase 2 wires them.
 
-The rate limiter is shared across all concurrent measurements in the same plugin process. It learns per-endpoint Datadog bucket names from `X-RateLimit-Name` response headers and adapts its token-bucket ceiling accordingly (layer 2 adaptation). The concurrency semaphore (layer 4) prevents thundering-herd bursts during large canary waves.
+All concurrent measurements in the same plugin process share the rate limiter. The rate limiter learns per-endpoint Datadog bucket names from `X-RateLimit-Name` response headers. It then adapts its token-bucket ceiling accordingly (layer 2 adaptation). The concurrency semaphore (layer 4) prevents thundering-herd bursts during large canary waves.
