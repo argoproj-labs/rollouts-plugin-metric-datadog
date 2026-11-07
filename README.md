@@ -1,6 +1,6 @@
 # rollouts-plugin-metric-datadog
 
-An [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) metric plugin that gates canary and blue-green rollouts on Datadog observability data. Phase 1 supports three sources: **metrics** (v1 and v2 scalar queries with multi-query formulas), **monitor** (group search or by-id), and **SLO** (search or by-id history). The plugin resolves Datadog credentials in-process, merges structured `tags` into queries automatically, and provides shared rate-limiting and short-TTL caching across concurrent rollout waves. Built and tested against Argo Rollouts v1.9.0.
+An [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) metric plugin that gates canary and blue-green rollouts on Datadog observability data. Phase 1 supports three sources: **metrics** (v1 and v2 scalar queries with multi-query formulas), **monitor** (group search or by-id), and **SLO** (search or by-id history). The plugin resolves Datadog credentials in-process, merges structured `tags` into queries automatically, and provides shared rate-limiting and short-TTL caching across concurrent rollout waves. Built and tested against Argo Rollouts v1.10.2.
 
 ## Supported sources (Phase 1)
 
