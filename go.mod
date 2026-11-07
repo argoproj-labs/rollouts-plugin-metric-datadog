@@ -1,6 +1,6 @@
 module github.com/argoproj-labs/rollouts-plugin-metric-datadog
 
-go 1.26.0
+go 1.27.3
 
 require (
 	github.com/DataDog/datadog-api-client-go/v2 v2.64.0
