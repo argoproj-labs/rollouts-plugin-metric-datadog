@@ -60,7 +60,7 @@ spec:
       interval: 1m
       provider:
         plugin:
-          mubarak-j/rollouts-plugin-metric-datadog:
+          argoproj-labs/rollouts-plugin-metric-datadog:
             tags: ["service:my-cool-service", "env:production"]
             metrics:
               apiVersion: v1
@@ -99,7 +99,7 @@ After:
 ```yaml
 provider:
   plugin:
-    mubarak-j/rollouts-plugin-metric-datadog:
+    argoproj-labs/rollouts-plugin-metric-datadog:
       tags: ["service:my-cool-service", "env:production"]
       monitor:
         query: "muted:false"
@@ -117,7 +117,7 @@ The plugin's resolution step 3 reads a Secret literally named `datadog` from the
 If your cluster uses a different Secret name, set `secretRef.name` explicitly:
 
 ```yaml
-mubarak-j/rollouts-plugin-metric-datadog:
+argoproj-labs/rollouts-plugin-metric-datadog:
   secretRef:
     name: my-datadog-secret
   tags: ["service:my-cool-service", "env:production"]

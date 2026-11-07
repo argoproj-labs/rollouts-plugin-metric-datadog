@@ -43,8 +43,21 @@ Each source lives in its own file under `internal/datasource/` and implements tw
 
 The core plugin (`internal/plugin/plugin.go`) does not change — rate-limiting, caching, and credential resolution are all handled there automatically.
 
+## Sign your commits (DCO)
+
+Every commit must carry a `Signed-off-by:` trailer matching its author, or the DCO check blocks the pull request. `git commit -s` adds it.
+
+To never think about it again, enable the repo's hook once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+`.githooks/prepare-commit-msg` then appends the trailer to any commit that lacks one, including `--amend` and rebases.
+
 ## Submitting changes
 
 1. Fork the repo and create a branch from `main`.
 2. Make your changes and ensure `make test`, `make vet`, and `golangci-lint run` all pass.
-3. Open a pull request — CI runs the same checks automatically.
+3. Sign off every commit (see above).
+4. Open a pull request — CI runs the same checks automatically.
