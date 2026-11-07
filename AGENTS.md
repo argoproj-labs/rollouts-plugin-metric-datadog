@@ -1,58 +1,58 @@
 # AGENTS.md
 
-Rules and instructions for AI coding agents (Claude Code, Cursor, Copilot, etc.).
-Symlinked from `CLAUDE.md` for tools that read that name.
+This file gives rules and instructions to AI coding agents, for example Claude Code, Cursor, and Copilot.
+`CLAUDE.md` is a symlink to this file, for tools that read that name.
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+These rules prefer caution to speed. For trivial tasks, use your judgment.
 
 ---
 
-## 1. Think Before Coding
+## 1. Think before coding
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+Do not assume. Do not hide confusion. Say what the tradeoffs are.
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them — don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+Before you implement:
+- State your assumptions explicitly. If you are not sure, ask.
+- If multiple interpretations exist, present them. Do not pick one silently.
+- If a simpler approach exists, say so. When pushback is warranted, push back.
+- If something is unclear, stop. Name what confuses you. Ask.
 
-## 2. Simplicity First
+## 2. Simplicity first
 
-**Minimum code that solves the problem. Nothing speculative.**
+Write the minimum code that solves the problem. Write nothing speculative.
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+- Add no features beyond what the user asked for.
+- Add no abstractions for single-use code.
+- Add no "flexibility" or "configurability" that nobody requested.
+- Add no error handling for impossible scenarios.
+- If you write 200 lines and 50 lines are enough, rewrite it.
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+Ask yourself: "Will a senior engineer say this is overcomplicated?" If the answer is yes, simplify.
 
-## 3. Surgical Changes
+## 3. Surgical changes
 
-**Touch only what you must. Clean up only your own mess.**
+Touch only what you must. Clean up only your own mess.
 
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it — don't delete it.
+When you edit existing code:
+- Do not "improve" adjacent code, comments, or formatting.
+- Do not refactor things that are not broken.
+- Even if you prefer a different style, match the existing style.
+- If you see unrelated dead code, mention it. Do not delete it.
 
 When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
+- Remove imports, variables, and functions that YOUR changes made unused.
+- If nobody asked you to, do not remove pre-existing dead code.
 
-The test: every changed line should trace directly to the user's request.
+Use this test: every changed line must trace directly to the user's request.
 
-## 4. Goal-Driven Execution
+## 4. Goal-driven execution
 
-**Define success criteria. Loop until verified.**
+Define success criteria. Loop until the criteria pass.
 
-Transform tasks into verifiable goals:
+Turn each task into a verifiable goal:
 - "Add validation" → "Write tests for invalid inputs, then make them pass"
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
+- "Refactor X" → "Make sure that tests pass before and after"
 
 For multi-step tasks, state a brief plan:
 ```
@@ -61,7 +61,7 @@ For multi-step tasks, state a brief plan:
 3. [Step] → verify: [check]
 ```
 
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+Strong success criteria let you loop independently. Weak criteria, for example "make it work", need constant clarification.
 
 ---
 
@@ -78,46 +78,47 @@ test -z "$(gofmt -l .)"   # formatting gate (also enforced by CI)
 
 # single package / single test
 go test ./internal/datasource -run TestMetrics -race -count=1
-
-docker build -t rollouts-plugin-metric-datadog .
 ```
 
 ### Every commit needs a DCO sign-off
 
-The DCO check blocks any PR containing a commit without a `Signed-off-by:` trailer matching its author. Commit with `git commit -s`, or run `git config core.hooksPath .githooks` once and let `.githooks/prepare-commit-msg` add it for you.
+The DCO check blocks any PR that contains a commit without a `Signed-off-by:` trailer that matches its author. Commit with `git commit -s`. As an alternative, run `git config core.hooksPath .githooks` once. Then `.githooks/prepare-commit-msg` adds the trailer for you.
 
 ### Never run `go mod tidy` casually
 
-`go mod tidy` strips `github.com/DataDog/zstd` (a cgo-only transitive dep), which breaks the `-race` build. If you must tidy, restore it immediately:
+`go mod tidy` strips `github.com/DataDog/zstd`, a cgo-only transitive dependency. This breaks the `-race` build. If you must tidy, restore the dependency immediately:
 
 ```bash
 go get github.com/DataDog/zstd@v1.5.2
 ```
 
-Dependabot ignores this dep for the same reason (`.github/dependabot.yml`).
+Dependabot ignores this dependency for the same reason. See `.github/dependabot.yml`.
 
 ### Errors must be `MarkMeasurementError`, never `Failed`
 
-Any error in `Run()` must produce an `Error` measurement phase, not `Failed`. `failureLimit` defaults to 0 — mapping a Datadog throttle to `Failed` aborts a rollout on infra flakiness instead of a real regression.
+Any error in `Run()` must produce an `Error` measurement phase, not `Failed`. `failureLimit` defaults to 0. If you map a Datadog throttle to `Failed`, the rollout aborts on infrastructure flakiness instead of a real regression.
 
 ### Test guard: never remove the `DD_*` env check
 
-`Run`-level tests skip or fail-fast when `DD_API_KEY` / `DD_APP_KEY` are set in the environment. Keep that guard when adding cases.
+When `DD_API_KEY` or `DD_APP_KEY` is set in the environment, `Run`-level tests skip or fail fast. When you add cases, keep that guard.
 
 ### Testing conventions
 
-- Table-test data sources against `net/http/httptest` stubs. Assert request shape and response parsing — not live Datadog.
-- `RpcPlugin` exposes `selectSource` and `newClient` indirections; use them to inject fakes without a real kube client or Datadog endpoint.
+- Table-test data sources against `net/http/httptest` stubs. Assert the request shape and the response parsing. Do not assert against live Datadog.
+- `RpcPlugin` exposes the `selectSource` and `newClient` indirections. Use them to inject fakes without a real kube client or a real Datadog endpoint.
 
 ---
 
 ## Reference docs
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — full design spec (architecture, result model, rate-limiting, phasing)
-- [docs/configuration.md](docs/configuration.md) — config schema, credential resolution, site values
-- [docs/install.md](docs/install.md) — installation from a release binary
-- [CONTRIBUTING.md](CONTRIBUTING.md) — how to add a data source, run tests, submit a PR
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): the full design spec (architecture, result model, rate-limiting, phasing)
+- [docs/configuration.md](docs/configuration.md): the configuration schema, credential resolution, and site values
+- [docs/install.md](docs/install.md): installation from a release binary
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to add a data source, run tests, and submit a PR
 
 ---
 
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+You can see that these rules work from these results:
+- Diffs have fewer unnecessary changes.
+- Fewer rewrites come from overcomplication.
+- Clarifying questions come before implementation, not after mistakes.

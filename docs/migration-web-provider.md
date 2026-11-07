@@ -1,6 +1,6 @@
-# Migrating from the `web` Provider to This Plugin
+# Migrating from the `web` provider to this plugin
 
-The Argo Rollouts built-in `web` metric provider can query Datadog by constructing the API URL manually, passing credentials as HTTP headers, and URI-encoding tag filters into the query string. This plugin replaces that pattern with structured config, in-process credential resolution, and automatic tag merging — while preserving the same `failureCondition`/`successCondition` expressions.
+The Argo Rollouts built-in `web` metric provider can query Datadog. To do this, you construct the API URL manually, pass credentials as HTTP headers, and URI-encode tag filters into the query string. This plugin replaces that pattern with structured configuration, in-process credential resolution, and automatic tag merging. It keeps the same `failureCondition`/`successCondition` expressions.
 
 ---
 
@@ -40,10 +40,10 @@ spec:
 ```
 
 Pain points:
-- Tags must be URI-encoded into the URL by hand.
-- Credentials are passed via `args` referencing a SecretKeyRef — they appear in the AnalysisRun spec.
-- The time window (`from`/`to`) is computed with template functions and is fragile.
-- No rate limiting or caching across concurrent rollout waves.
+- You must URI-encode tags into the URL by hand.
+- The template passes credentials through `args` that reference a SecretKeyRef. The credentials appear in the AnalysisRun spec.
+- Template functions compute the time window (`from`/`to`). This calculation is fragile.
+- There is no rate limiting or caching across concurrent rollout waves.
 
 ---
 
@@ -69,11 +69,11 @@ spec:
 ```
 
 What changed:
-- **No credential args.** The plugin reads credentials from the `datadog` Secret in the controller namespace automatically (resolution step 3). The existing `datadog` Secret (`api-key` / `app-key` keys) drops in unchanged — no new Secret, no new `args`.
-- **Structured tags.** `tags` is a YAML list; the plugin merges them into the query's `{...}` scope brace. No URI encoding.
-- **Time window computed in-process.** The plugin computes `[now-5m, now]` automatically from `metrics.interval` (default 5m). No template arithmetic.
-- **Rate limiting and caching** are on by default across all concurrent measurements.
-- **Same `successCondition`.** The scalar result shape is identical to what `jsonPath` extracts from the v1 API.
+- The template has no credential args. The plugin reads credentials automatically from the `datadog` Secret in the controller namespace (resolution step 3). The existing `datadog` Secret (`api-key` / `app-key` keys) drops in unchanged. You need no new Secret and no new `args`.
+- The tags are structured. `tags` is a YAML list, and the plugin merges the tags into the query's `{...}` scope brace. You do not need URI encoding.
+- The plugin computes the time window in-process. It computes `[now-5m, now]` automatically from `metrics.interval` (default 5m). You do not need template arithmetic.
+- Rate limiting and caching are on by default across all concurrent measurements.
+- The `successCondition` stays the same. The scalar result shape is identical to what `jsonPath` extracts from the v1 API.
 
 ---
 
@@ -106,13 +106,13 @@ provider:
 failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
 ```
 
-Note: the plugin returns the full `SearchMonitorGroupsResponse` as `result`, so the path becomes `result.counts.status` (not bare `result`). Update the condition accordingly.
+The plugin returns the full `SearchMonitorGroupsResponse` as `result`. For this reason, the path becomes `result.counts.status`, not bare `result`. Update the condition to use this path.
 
 ---
 
 ## Credential reuse
 
-The plugin's resolution step 3 reads a Secret literally named `datadog` from the controller namespace, expecting `api-key` and `app-key` keys. This matches the standard Datadog Secret that the `web` provider previously referenced via `secretKeyRef`. No Secret changes are needed; remove the `args` block from the AnalysisTemplate and let the plugin resolve credentials automatically.
+The plugin's resolution step 3 reads a Secret with the literal name `datadog` from the controller namespace. It expects the `api-key` and `app-key` keys. This matches the standard Datadog Secret that the `web` provider previously referenced through `secretKeyRef`. You do not need to change the Secret. Remove the `args` block from the AnalysisTemplate. The plugin then resolves credentials automatically.
 
 If your cluster uses a different Secret name, set `secretRef.name` explicitly:
 
