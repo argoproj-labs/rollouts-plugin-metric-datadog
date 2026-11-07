@@ -1,0 +1,32 @@
+site_name: Argo Rollouts Datadog metric plugin
+site_url: https://rollouts-plugin-metric-datadog.readthedocs.io/
+repo_url: https://github.com/argoproj-labs/rollouts-plugin-metric-datadog
+theme:
+  name: material
+  font:
+    text: Work Sans
+  palette:
+  - primary: teal
+    scheme: default
+    toggle:
+      icon: material/toggle-switch-off-outline
+      name: Switch to dark mode
+  - scheme: slate
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to light mode
+markdown_extensions:
+- admonition
+- pymdownx.highlight
+- pymdownx.superfences
+- toc:
+    permalink: true
+nav:
+- Overview: index.md
+- Installation: install.md
+- Configuration: configuration.md
+- Migrating from the web provider: migration-web-provider.md
+- Architecture: ARCHITECTURE.md
+- Contributing: https://github.com/argoproj-labs/rollouts-plugin-metric-datadog/blob/main/CONTRIBUTING.md
+exclude_docs: |
+  requirements.txt
