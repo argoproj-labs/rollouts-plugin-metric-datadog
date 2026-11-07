@@ -8,7 +8,7 @@ spec:
       interval: 1m
       provider:
         plugin:
-          mubarak-j/rollouts-plugin-metric-datadog:
+          argoproj-labs/rollouts-plugin-metric-datadog:
             tags: ["service:my-cool-service", "env:production"]
             metrics:
               apiVersion: v2
