@@ -135,6 +135,8 @@ avoid hand-rolling structs and parsing across ~7 heterogeneous endpoints.
 | logs | `datadogV2.LogsApi.AggregateLogs` | `/api/v2/logs/analytics/aggregate` |
 
 ### 4.3 Plugin mechanism (fixed by Argo Rollouts)
+See the [Argo Rollouts metric plugin docs](https://argo-rollouts.readthedocs.io/en/stable/analysis/plugins/).
+
 - **Transport:** HashiCorp go-plugin over `net/rpc`/gob (not gRPC). The controller
   launches the plugin as a managed, long-lived child process and talks over a
   local socket. Plugins must be Go.
@@ -551,12 +553,15 @@ errors the rollout is **aborted on Datadog throttling rather than on a real
 regression**. A throttle must never map to `Failed` — `failureLimit` defaults to 0,
 so a single `Failed` aborts immediately.
 
-Known limits (confirmed where cited; others discovered at runtime — §15.3):
-- `/api/v1/query`: **1,600 req / 60s (~26/s)** per-org (confirmed).
+Known limits (confirmed where cited; others discovered at runtime — §15.3). See
+[Datadog API rate limits](https://docs.datadoghq.com/api/latest/rate-limits/):
+- `/api/v1/query`: **1,600 req / 60s (~26/s)** per-org (confirmed by a verbatim
+  Datadog throttle error in [kedacore/keda#5521](https://github.com/kedacore/keda/issues/5521)).
 - `v2/query/scalar`, monitor, and SLO endpoints: not publicly documented.
 - apm (`spans/analytics/aggregate`) and logs (`logs/analytics/aggregate`): reported
-  ~**300 req/hour** (~0.08/s) — if accurate, ~300× stricter; ~5 rollouts polling
-  logs every 60s saturate the whole org budget, 200 would be ~40× over.
+  ~**300 req/hour** (~0.08/s) by secondary sources only (unconfirmed) — if
+  accurate, ~300× stricter; ~5 rollouts polling logs every 60s saturate the whole
+  org budget, 200 would be ~40× over.
 
 Two scale effects:
 - **Burst alignment.** The controller adds no jitter and requeues each metric
@@ -636,43 +641,3 @@ retry:
 - 429 handling: an `httptest.Server` returning `429` + `X-RateLimit-Reset` asserts
   retry timing and the Error-vs-last-good path, and that a throttle never yields
   `Failed`.
-
-## 16. References
-
-Verified during design (2026-06-18):
-- Argo Rollouts plugin system & analysis plugin docs
-  (argo-rollouts.readthedocs.io) — go-plugin/`net/rpc`, handshake, ConfigMap,
-  `plugin-bin` resolution.
-- Built-in Datadog provider source (`metricproviders/datadog`) — credential
-  resolution order, v1/v2 endpoints, scalar parsing.
-- `argoproj-labs/rollouts-plugin-metric-sample-prometheus` — template structure.
-- Datadog Go SDK `github.com/DataDog/datadog-api-client-go/v2` — confirmed:
-  module path; `datadogV1`/`datadogV2` sub-packages; auth via
-  `datadog.ContextAPIKeys` (`apiKeyAuth`/`appKeyAuth`); site via
-  `datadog.ContextServerVariables{"site"}`.
-- SLO search inline status — confirmed from SDK source: `SearchSLOResponse →
-  data.attributes.slos[] (SearchServiceLevelObjective)`, whose attributes carry
-  `OverallStatus []SLOOverallStatuses` with `state` (breached/warning/ok/no_data),
-  `status` (SLI), `target`, `errorBudgetRemaining`, plus `all_tags`/`service_tags`/
-  `env_tags`/`team_tags`, `name`, `groups`, `thresholds`.
-- Prior approach: `kubernetes-deployments`
-  `.../argo-rollouts/analysisTemplate/cluster-datadog-monitor.yaml` (Monitor Group
-  Search via the `web` provider).
-
-Verified during rate-limit analysis (2026-06-19):
-- Datadog API rate limits — per-org scope; `X-RateLimit-Limit/Period/Remaining/Reset/Name`
-  headers on every response; no `Retry-After`
-  (docs.datadoghq.com/api/latest/rate-limits/).
-- `/api/v1/query` = 1,600 req/60s — confirmed via a verbatim Datadog throttle error
-  (kedacore/keda#5521). apm/logs analytics aggregate ~300/hr is reported by secondary
-  sources only (treat as unconfirmed; discover via `X-RateLimit-Limit` at runtime).
-- Datadog Go SDK retry — `RetryConfiguration{EnableRetry (default false), MaxRetries 3,
-  BackOffBase 2, BackOffMultiplier 2, HTTPRetryTimeout 60s}`, honors `X-Ratelimit-Reset`
-  on 429, client-global only (`api/datadog/client.go` `shouldRetryRequest`,
-  `api/datadog/configuration.go`).
-- Argo Rollouts execution model — singleton plugin process
-  (`metricproviders/plugin/client/client.go`, `sync.Once`); 30 analysis workers
-  (`DefaultAnalysisThreads`); leader election on by default; no interval jitter; phase
-  semantics (`Error`/`Failed`/`Inconclusive`, `consecutiveErrorLimit` default 4,
-  `failureLimit`/`inconclusiveLimit` default 0) — `analysis/analysis.go`,
-  `pkg/apis/rollouts/v1alpha1/analysis_types.go`.
