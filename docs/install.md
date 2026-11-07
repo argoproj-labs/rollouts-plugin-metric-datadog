@@ -21,7 +21,7 @@ spec:
           emptyDir: {}
       initContainers:
         - name: copy-datadog-plugin
-          image: ghcr.io/mubarak-j/rollouts-plugin-metric-datadog:latest
+          image: ghcr.io/argoproj-labs/rollouts-plugin-metric-datadog:latest
           securityContext:
             runAsNonRoot: true
             runAsUser: 999
@@ -43,10 +43,10 @@ spec:
 Three details matter here:
 
 - **`mountPath` must be `/home/argo-rollouts/plugin-bin`.** The controller's working directory is `/home/argo-rollouts`, so a `file://./plugin-bin/...` location resolves relative to that, not to `/`.
-- **The copy destination must not be the location the controller installs to.** Argo Rollouts installs every plugin to `<workdir>/plugin-bin/<plugin-name>` — here `/home/argo-rollouts/plugin-bin/mubarak-j/rollouts-plugin-metric-datadog`. If the initContainer writes the binary to that same path and the ConfigMap points `location` at it, the controller copies the file onto itself, truncating it to 0 bytes. The controller then fails with `fork/exec ...: exec format error`. Copy to a distinct name (`datadog-plugin-src`) and let the controller install from it.
+- **The copy destination must not be the location the controller installs to.** Argo Rollouts installs every plugin to `<workdir>/plugin-bin/<plugin-name>` — here `/home/argo-rollouts/plugin-bin/argoproj-labs/rollouts-plugin-metric-datadog`. If the initContainer writes the binary to that same path and the ConfigMap points `location` at it, the controller copies the file onto itself, truncating it to 0 bytes. The controller then fails with `fork/exec ...: exec format error`. Copy to a distinct name (`datadog-plugin-src`) and let the controller install from it.
 - **`runAsUser: 999`** matches the uid of the `argo-rollouts` container, so the controller can `chmod` the binary it installs. A different uid produces `failed to set file permissions of plugin: ... operation not permitted`.
 
-The initContainer writes `/home/argo-rollouts/plugin-bin/datadog-plugin-src`; the controller installs from there to `/home/argo-rollouts/plugin-bin/mubarak-j/rollouts-plugin-metric-datadog`.
+The initContainer writes `/home/argo-rollouts/plugin-bin/datadog-plugin-src`; the controller installs from there to `/home/argo-rollouts/plugin-bin/argoproj-labs/rollouts-plugin-metric-datadog`.
 
 ### 2. Configure the plugin in the ConfigMap
 
@@ -59,7 +59,7 @@ metadata:
   name: argo-rollouts-config
 data:
   metricProviderPlugins: |-
-    - name: "mubarak-j/rollouts-plugin-metric-datadog"
+    - name: "argoproj-labs/rollouts-plugin-metric-datadog"
       location: "file://./plugin-bin/datadog-plugin-src"
 ```
 
@@ -68,8 +68,8 @@ Restart the controller after applying the ConfigMap.
 Verify the handshake in the controller log before running an AnalysisRun:
 
 ```
-Copied plugin from /home/argo-rollouts/plugin-bin/datadog-plugin-src to /home/argo-rollouts/plugin-bin/mubarak-j/rollouts-plugin-metric-datadog
-plugin: plugin started: path=/home/argo-rollouts/plugin-bin/mubarak-j/rollouts-plugin-metric-datadog pid=15
+Copied plugin from /home/argo-rollouts/plugin-bin/datadog-plugin-src to /home/argo-rollouts/plugin-bin/argoproj-labs/rollouts-plugin-metric-datadog
+plugin: plugin started: path=/home/argo-rollouts/plugin-bin/argoproj-labs/rollouts-plugin-metric-datadog pid=15
 plugin: using plugin: version=1
 ```
 
@@ -88,8 +88,8 @@ metadata:
   name: argo-rollouts-config
 data:
   metricProviderPlugins: |-
-    - name: "mubarak-j/rollouts-plugin-metric-datadog"
-      location: "https://github.com/mubarak-j/rollouts-plugin-metric-datadog/releases/download/v0.1.0-alpha.1/rollouts-plugin-metric-datadog-linux-amd64"
+    - name: "argoproj-labs/rollouts-plugin-metric-datadog"
+      location: "https://github.com/argoproj-labs/rollouts-plugin-metric-datadog/releases/download/v0.1.0-alpha.1/rollouts-plugin-metric-datadog-linux-amd64"
       sha256: "524637e552329d0e161157b5eb206a8d29cc98b0a4ba97171bb05400a02b46ec"
 ```
 
@@ -102,7 +102,7 @@ data:
 | `rollouts-plugin-metric-datadog-darwin-amd64` | `b8a8fe2d4d8a34660f9b56baf5f35f59b115891c8131f407b5400ad5c060f039` |
 | `rollouts-plugin-metric-datadog-darwin-arm64` | `48fd5d1155397cea36236e1ff867cd02a4ca9e1bc42e0f9877539ee975cdd9bd` |
 
-Update the version tag and `sha256` when upgrading. The [releases page](https://github.com/mubarak-j/rollouts-plugin-metric-datadog/releases) lists all available versions.
+Update the version tag and `sha256` when upgrading. The [releases page](https://github.com/argoproj-labs/rollouts-plugin-metric-datadog/releases) lists all available versions.
 
 ---
 

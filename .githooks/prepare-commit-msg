@@ -1,0 +1,6 @@
+#!/bin/sh
+# Append a DCO sign-off unless this commit already has one.
+# Enable once per clone: git config core.hooksPath .githooks
+grep -qi '^Signed-off-by:' "$1" && exit 0
+git interpret-trailers --in-place \
+	--trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>" "$1"
