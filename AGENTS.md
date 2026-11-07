@@ -78,8 +78,6 @@ test -z "$(gofmt -l .)"   # formatting gate (also enforced by CI)
 
 # single package / single test
 go test ./internal/datasource -run TestMetrics -race -count=1
-
-docker build -t rollouts-plugin-metric-datadog .
 ```
 
 ### Every commit needs a DCO sign-off

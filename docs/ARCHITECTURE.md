@@ -157,9 +157,9 @@ avoid hand-rolling structs and parsing across ~7 heterogeneous endpoints.
         # or location: "https://github.com/argoproj-labs/rollouts-plugin-metric-datadog/releases/download/vX/...-linux-amd64"
         #    sha256: "<hex>"
   ```
-  The binary is resolved under `<cwd>/plugin-bin/<namespace>/<name>`. Two install
-  methods: (1) initContainer copies the binary into a shared `plugin-bin` volume,
-  or (2) `https://` location with `sha256` verification at controller startup.
+  The binary is resolved under `<cwd>/plugin-bin/<namespace>/<name>`. The
+  documented install method is an `https://` location with `sha256` verification
+  at controller startup.
 - The plugin **name in the ConfigMap must equal the map key** used in
   `provider.plugin.<name>` in AnalysisTemplates. The canonical name is
   `argoproj-labs/rollouts-plugin-metric-datadog`; operators may alias it.
@@ -488,7 +488,7 @@ internal/datasource/
 internal/datadog/
   client.go                  # SDK client construction, site mapping
   credentials.go             # credential resolver + kube client
-docs/  examples/  Dockerfile  Makefile  .github/workflows/
+docs/  examples/  Makefile  .github/workflows/
 ```
 
 Code reuse: import argo-rollouts as a Go module dependency (`v1alpha1` types,
@@ -532,11 +532,8 @@ Code reuse: import argo-rollouts as a Go module dependency (`v1alpha1` types,
 ## 14. Distribution and migration
 
 - GitHub releases with per-arch binaries + `sha256`. Controller
-  `argo-rollouts-config` references via `file://` (initContainer copy) or
-  `https://` with sha verification. Guidance: prefer the **initContainer**
-  (`file://`) method when the cluster has no outbound internet access or already
-  manages binaries via image workflows; use **`https://`** for simple clusters with
-  internet egress where image management is a burden.
+  `argo-rollouts-config` references the release binary via `https://` with sha
+  verification.
 - Migration doc: the `cluster-datadog-monitor.yaml` (`web` provider, manual
   tag encoding, keys-in-args) → the plugin form (structured `tags`, in-process
   credential resolution, same conditions).
