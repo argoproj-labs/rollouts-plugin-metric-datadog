@@ -115,7 +115,7 @@ Any error in `Run()` must produce an `Error` measurement phase, not `Failed`. `f
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — full design spec (architecture, result model, rate-limiting, phasing)
 - [docs/configuration.md](docs/configuration.md) — config schema, credential resolution, site values
-- [docs/install.md](docs/install.md) — installation via initContainer or binary download
+- [docs/install.md](docs/install.md) — installation from a release binary
 - [CONTRIBUTING.md](CONTRIBUTING.md) — how to add a data source, run tests, submit a PR
 
 ---

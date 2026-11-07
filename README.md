@@ -12,7 +12,7 @@ An [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) metric plugin that
 
 ## Documentation
 
-- [docs/install.md](docs/install.md) — install via initContainer or URL download; RBAC notes
+- [docs/install.md](docs/install.md) — install from a release binary URL; RBAC notes
 - [docs/configuration.md](docs/configuration.md) — full config schema, credential resolution, site values, result shapes
 - [docs/migration-web-provider.md](docs/migration-web-provider.md) — migrating from the built-in `web` provider
 
