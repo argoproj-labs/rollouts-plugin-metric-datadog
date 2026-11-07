@@ -17,7 +17,7 @@ jobs:
       - run: go vet ./...
       - uses: golangci/golangci-lint-action@v7
         with:
-          version: v2.13.2
+          version: v2.15.0
       - run: go test ./... -race -count=1
       - name: Check formatting
         run: test -z "$(gofmt -l .)"
