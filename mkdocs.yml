@@ -28,6 +28,9 @@ nav:
 - How-to guides:
   - Install the plugin: install.md
   - Migrate from the web provider: migration-web-provider.md
+  - Gate a rollout on Datadog monitors: how-to/gate-on-monitors.md
+  - Gate a rollout on SLOs: how-to/gate-on-slos.md
+  - Gate a rollout on a metric query: how-to/gate-on-metrics.md
   - Tune timeouts for rate limits: how-to/tune-rate-limits.md
 - Reference:
   - Configuration: configuration.md
