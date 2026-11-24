@@ -1,6 +1,16 @@
 # About rate limiting and caching
 
-Datadog limits API calls per organization. Every rollout in a cluster draws from the same budget, so the plugin limits its own calls and shares results between measurements. This page explains how those parts work in Phase 1.
+Datadog limits API calls per organization. The plugin limits its own calls and shares results between measurements, so that rollouts do not fail because of throttling. This page explains why, and how those parts work in Phase 1.
+
+## Why the plugin limits its own calls
+
+Datadog counts API calls per organization, and also per API key and per user. Every rollout in a cluster draws from the same budget. Terraform, dashboards, and other automation in the organization draw from it too. With 200 rollouts running at once, the plugin can use up the budget, and other clients can starve the plugin.
+
+Bursts make this worse. The controller adds no random delay between measurements. Canaries that start together in one deploy wave measure at the same moment, so N rollouts send N calls within about a second.
+
+A limit inside the plugin can control all of this traffic. The controller runs the plugin as one child process, and leader election keeps exactly one controller active in the cluster. As a result, one plugin process sees every Datadog call that the cluster makes.
+
+Datadog documents a limit of 1,600 requests per 60 seconds per organization for `/api/v1/query`. It does not publish the limits for the v2 scalar, monitor, and SLO endpoints. The plugin therefore learns each limit from the response headers.
 
 ## The limiter
 

@@ -32,6 +32,8 @@ nav:
 - Reference:
   - Configuration: configuration.md
 - Explanation:
+  - About the result model: explanation/result-model.md
+  - About credentials and the secretRef risk: explanation/credentials.md
   - About rate limiting and caching: explanation/rate-limiting.md
 - Project:
   - Contributing: CONTRIBUTING.md
