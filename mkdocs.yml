@@ -28,8 +28,11 @@ nav:
 - How-to guides:
   - Install the plugin: install.md
   - Migrate from the web provider: migration-web-provider.md
+  - Tune timeouts for rate limits: how-to/tune-rate-limits.md
 - Reference:
   - Configuration: configuration.md
+- Explanation:
+  - About rate limiting and caching: explanation/rate-limiting.md
 - Project:
   - Contributing: CONTRIBUTING.md
   - Design spec: ARCHITECTURE.md

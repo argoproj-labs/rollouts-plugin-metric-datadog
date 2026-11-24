@@ -23,12 +23,12 @@ provider:
       # NOTE: rateLimit.enabled, budgetFraction, maxConcurrent, and buckets are
       # PHASE-1-RESERVED and not yet honored. The rate limiter runs with fixed
       # built-in defaults (10 rps default bucket, 16 max concurrent). These
-      # fields are parsed and validated but have no runtime effect in Phase 1.
+      # fields are accepted without error but have no effect in Phase 1.
       rateLimit:
         enabled: true                # RESERVED (Phase 1) — not yet wired; limiter always runs at built-in defaults
-        budgetFraction: 0.5          # RESERVED (Phase 1) — parsed but ignored
-        maxConcurrent: 16            # RESERVED (Phase 1) — parsed but ignored; built-in default is 16
-        buckets:                     # RESERVED (Phase 1) — parsed but ignored
+        budgetFraction: 0.5          # RESERVED (Phase 1) — ignored
+        maxConcurrent: 16            # RESERVED (Phase 1) — ignored; built-in default is 16
+        buckets:                     # RESERVED (Phase 1) — ignored
           metrics: {rps: 5.0}
 
       # --- Caching (optional) ---
@@ -38,7 +38,7 @@ provider:
       # identical queries — it does not fully disable caching.
       cache:
         enabled: true                # Live: false skips fresh-value TTL read; cache still coalesces concurrent queries
-        ttl: "30s"                   # RESERVED (Phase 1) — parsed but ignored; cache always uses 30s TTL
+        ttl: "30s"                   # RESERVED (Phase 1) — ignored; cache always uses 30s TTL
 
       # --- SDK retry (optional) ---
       retry:
@@ -77,13 +77,11 @@ The `site` field controls the Datadog regional endpoint. These are the common va
 
 To route to a custom proxy or a local test server, use `address` instead of `site`.
 
-## Timeout and rate-limit retry
+## Timeout and retry
 
-`timeoutSeconds` sets the hard deadline for each measurement. The SDK's internal retry timer is bounded to `timeout - timeout/5`, so the plugin can observe a clean context cancellation.
+`timeoutSeconds` sets the deadline for each measurement. The default is 30 seconds.
 
-For `metrics` and `monitor`, a 429 response causes the SDK to honor the `X-RateLimit-Reset` header. For the `/api/v1/query` endpoint, this header can be up to ~60 seconds. The retry fires only if time remains within the SDK retry window (`timeout * 4/5`).
-
-If you need the header-aware retry to fire before the context deadline, set `timeoutSeconds` to at least 60–90 seconds. With the default of 30s, the SDK retry window is only 24s. A Reset value near 60s will exhaust the deadline before the retry can run.
+The SDK retries 429 and 5xx responses up to `retry.maxRetries` times. On a 429 response, it waits for the time in the `X-RateLimit-Reset` header. The SDK stops retrying after four fifths of `timeoutSeconds`, which is 24 seconds at the default. To size these values, see [Tune timeouts for rate limits](how-to/tune-rate-limits.md).
 
 ## Metrics source
 
@@ -119,7 +117,7 @@ monitor:
   id: 12345678            # Integer monitor ID. Switches to by-id mode (tags not allowed with id).
 ```
 
-In search mode (no `id`), the plugin calls `SearchMonitorGroups` with a query built from `tags` joined with `monitor.query`. The result is the full `SearchMonitorGroupsResponse` marshalled to a map.
+In search mode (no `id`), the plugin calls `SearchMonitorGroups` with a query built from `tags` joined with `monitor.query`. The result is the `SearchMonitorGroupsResponse` marshalled to a map, without the `counts.tag` facet.
 
 In by-id mode (`id` set), the plugin calls `GetMonitor`. The result is the Monitor object marshalled to a map. In this mode, tags must be empty.
 
@@ -166,28 +164,24 @@ successCondition: "result >= 99.9"
 | `slo` | search | `map` with `result.slos[].overall_status[].{state, ...}` | `any(result.slos, {any(.overall_status, {.state == 'breached'})})` |
 | `slo` | by-id | `float64` SLI value | `result >= 99.9` |
 
-## Service-tag guidance
+## Search warnings
 
-A `service:...` tag on each metric makes the resolved query identify one gated resource. A monitor or SLO search scoped only by `env:production` (or similar broad tags) can match resources across multiple rollouts. If this occurs, the shared cache coalesces results from different services.
-
-A monitor or SLO source can be in search mode with neither a `service:...` tag nor a per-source `query`. In this case, the plugin emits a log warning. `Config.Warnings()` surfaces this warning. The examples in this repository all use `tags: ["service:my-cool-service", "env:production"]` as the recommended baseline.
+If a monitor or SLO source is in search mode and has neither a `service:` tag nor a `query`, the plugin logs a warning. For the reason, see [About rate limiting and caching](explanation/rate-limiting.md#why-search-metrics-need-a-service-tag).
 
 ## Rate limit and cache defaults
 
 | Field | Default | Phase 1 status |
 |---|---|---|
 | `rateLimit.enabled` | `true` | RESERVED. Not yet wired. |
-| `rateLimit.budgetFraction` | `0.5` (applied by the limiter at runtime, not by configuration defaulting) | RESERVED. Parsed but ignored. |
-| `rateLimit.maxConcurrent` | `16` (applied by the limiter at runtime, not by configuration defaulting) | RESERVED. Parsed but ignored. |
-| `rateLimit.buckets` | None | RESERVED. Parsed but ignored. |
+| `rateLimit.budgetFraction` | `0.5` (applied by the limiter at runtime, not by configuration defaulting) | RESERVED. Ignored. |
+| `rateLimit.maxConcurrent` | `16` (applied by the limiter at runtime, not by configuration defaulting) | RESERVED. Ignored. |
+| `rateLimit.buckets` | None | RESERVED. Ignored. |
 | `cache.enabled` | `true` | Live. `false` skips the fresh-value TTL read. The cache still coalesces concurrent identical queries. |
-| `cache.ttl` | `30s` | RESERVED. Parsed but ignored. The cache always uses a 30s TTL. |
+| `cache.ttl` | `30s` | RESERVED. Ignored. The cache always uses a 30s TTL. |
 | `retry.maxRetries` | `3` | Live. Wired to the SDK retry count. |
 | `timeoutSeconds` | `30` | Live |
 | `metrics.apiVersion` | `v2` | Live |
 | `metrics.interval` | `5m` | Live |
 | `slo.interval` (by-id) | `7d` | Live |
 
-In Phase 1, the plugin parses and stores `rateLimit.*` (enabled/budgetFraction/maxConcurrent/buckets) and `cache.ttl`, but these fields have no runtime effect. The rate limiter runs with fixed built-in defaults: 10 rps default bucket, 16 max concurrent. The cache TTL is fixed at 30s. These fields are present in the schema so that operator configurations written today will be forward-compatible when Phase 2 wires them.
-
-All concurrent measurements in the same plugin process share the rate limiter. The limiter learns each endpoint's Datadog bucket name from the `X-RateLimit-Name` response header, and sets that bucket's ceiling to half of the limit that Datadog reports. A cap of 16 in-flight requests stops bursts when many canaries start at once. Section 15.3 of the [architecture](ARCHITECTURE.md) describes each layer.
+In Phase 1, the plugin accepts `rateLimit.*` and `cache.ttl` without error and ignores them. The rate limiter uses a default bucket of 10 requests per second and at most 16 requests in flight. The cache TTL is 30 seconds. For how the limiter and the cache work, see [About rate limiting and caching](explanation/rate-limiting.md).
