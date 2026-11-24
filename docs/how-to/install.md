@@ -39,7 +39,7 @@ The controller downloads the plugin again each time its pod starts. If GitHub is
 
 ## RBAC
 
-The plugin runs as a child process of the controller and reads Secrets through the controller ServiceAccount. The standard cluster-wide install gives the `argo-rollouts` ClusterRole `get`, `list`, and `watch` on Secrets in all namespaces. With that install, you need no additional RBAC, for the default `datadog` Secret (step 3 in [configuration.md](configuration.md#credential-resolution-order)) and for `secretRef.namespaced: true`.
+The plugin runs as a child process of the controller and reads Secrets through the controller ServiceAccount. The standard cluster-wide install gives the `argo-rollouts` ClusterRole `get`, `list`, and `watch` on Secrets in all namespaces. With that install, you need no additional RBAC, for the default `datadog` Secret (step 3 in [configuration.md](../reference/configuration.md#credential-resolution-order)) and for `secretRef.namespaced: true`.
 
 CAUTION: Treat "can author AnalysisTemplates in namespace N" as "can read all Secrets in N". The `secretRef.name` value is unrestricted, so with `namespaced: true` anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can make the controller read any Secret there and send its `api-key` and `app-key` to Datadog. To limit this, restrict Secret names by naming convention, label selector, or an admission policy (for example OPA or Kyverno) that rejects unknown `secretRef.name` values.
 

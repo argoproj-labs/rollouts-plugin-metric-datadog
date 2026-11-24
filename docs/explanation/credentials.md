@@ -28,4 +28,4 @@ The `secretRef.name` value is unrestricted. With `namespaced: true`, anyone who 
 
 The `address` field widens this risk. A template author can set `address` to any HTTPS host, and the plugin then sends the resolved keys to that host. This also applies to the keys from the default `datadog` Secret in the controller namespace.
 
-To limit the risk, use an admission policy, for example OPA or Kyverno. The policy can reject unknown `secretRef.name` values and any `address` value that is not your Datadog endpoint. For the RBAC side, see [Install the plugin](../install.md#rbac).
+To limit the risk, use an admission policy, for example OPA or Kyverno. The policy can reject unknown `secretRef.name` values and any `address` value that is not your Datadog endpoint. For the RBAC side, see [Install the plugin](../how-to/install.md#rbac).

@@ -9,7 +9,7 @@ In the tables, `<ns>`, `<name>`, and similar words stand for values from your co
 | Message | Cause | Fix |
 |---|---|---|
 | `no plugin config found under "argoproj-labs/rollouts-plugin-metric-datadog"` | The key under `provider.plugin` is not the plugin name. | Use the exact key `argoproj-labs/rollouts-plugin-metric-datadog`. |
-| `invalid plugin config JSON: ...` | The plugin block has a value of the wrong type, for example a string for `timeoutSeconds`. | Compare the block with the [configuration reference](../configuration.md). |
+| `invalid plugin config JSON: ...` | The plugin block has a value of the wrong type, for example a string for `timeoutSeconds`. | Compare the block with the [configuration reference](configuration.md). |
 | `exactly one of metrics/monitor/slo must be set (found <n>)` | The metric has no source block, or more than one. | Keep one of `metrics`, `monitor`, or `slo`. To use several sources, see [Combine monitors and SLOs](../how-to/combine-sources.md). |
 | `secretRef.namespaced=true requires a non-empty name` | `secretRef.namespaced` is `true`, and `secretRef.name` is empty. | Set `secretRef.name`. |
 | `tags cannot be combined with a by-id mode (monitor.id/slo.id); use search mode for tag filtering` | The metric sets `tags` and `monitor.id` or `slo.id`. | Remove `tags`, or remove the `id` to use search mode. |
@@ -25,7 +25,7 @@ In the tables, `<ns>`, `<name>`, and similar words stand for values from your co
 | Message | Cause | Fix |
 |---|---|---|
 | `reading secret <ns>/<name>: secrets "<name>" not found` | The Secret does not exist in that namespace. | Create the Secret, or fix `secretRef.name` and `secretRef.namespaced`. Without a `secretRef`, the plugin reads the `datadog` Secret in the controller namespace. |
-| `reading secret <ns>/<name>: ... forbidden ...` | The controller ServiceAccount cannot read Secrets in that namespace. | Grant the access. See [Install the plugin](../install.md#rbac). |
+| `reading secret <ns>/<name>: ... forbidden ...` | The controller ServiceAccount cannot read Secrets in that namespace. | Grant the access. See [Install the plugin](../how-to/install.md#rbac). |
 | `secret <ns>/<name> missing api-key/app-key` | The Secret has no `api-key` key or no `app-key` key, or one of them is empty. | Add both keys to the Secret. |
 | `DD_API_KEY set but DD_APP_KEY missing` | The controller has `DD_API_KEY` in its environment but not `DD_APP_KEY`. | Set `DD_APP_KEY` on the controller, or remove `DD_API_KEY`. |
 | `address "<value>" uses scheme "http"; only https is allowed ...` | `address`, the Secret `address` key, or `DD_ADDRESS` starts with `http://`. | Use an `https://` URL. |

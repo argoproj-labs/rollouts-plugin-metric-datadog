@@ -12,9 +12,9 @@ This is an [Argo Rollouts](https://argoproj.github.io/argo-rollouts/) metric plu
 
 ## Documentation
 
-- [Installation](install.md): install from a release binary URL, with RBAC notes
-- [Configuration](configuration.md): full configuration schema, credential resolution, site values, and result shapes
-- [Migrating from the web provider](migration-web-provider.md): move from the built-in `web` provider to this plugin
+- [Installation](how-to/install.md): install from a release binary URL, with RBAC notes
+- [Configuration](reference/configuration.md): full configuration schema, credential resolution, and site values
+- [Migrating from the web provider](how-to/migrate-web-provider.md): move from the built-in `web` provider to this plugin
 
 ## Examples
 

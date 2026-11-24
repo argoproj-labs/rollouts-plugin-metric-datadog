@@ -2,7 +2,7 @@
 
 This guide sets up a canary step that fails on an alerting Datadog monitor for your service.
 
-Before you start, install the plugin. See [Install the plugin](../install.md). This guide uses monitors that carry a `service:` tag and an `env:` tag.
+Before you start, install the plugin. See [Install the plugin](install.md). This guide uses monitors that carry a `service:` tag and an `env:` tag.
 
 ## Create the AnalysisTemplate
 
@@ -83,4 +83,4 @@ provider:
 failureCondition: "result.overall_state == 'Alert'"
 ```
 
-The result is the full monitor object. For all fields and result shapes, see the [configuration reference](../configuration.md#monitor-source).
+The result is the full monitor object. For all fields and result shapes, see the [configuration reference](../reference/configuration.md#monitor-source).

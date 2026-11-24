@@ -5,7 +5,7 @@
 - Upstream repository: `github.com/argoproj-labs/rollouts-plugin-metric-datadog`
 
 !!! note "Design record"
-    This page is the design spec from 2026-06-18. It records the planned design, including Phase 2 sources and settings that Phase 1 does not have. For what the plugin does today, see the [configuration reference](configuration.md) and the explanation pages: [result model](explanation/result-model.md), [credentials](explanation/credentials.md), and [rate limiting and caching](explanation/rate-limiting.md).
+    This page is the design spec from 2026-06-18. It records the planned design, including Phase 2 sources and settings that Phase 1 does not have. For what the plugin does today, see the [configuration reference](reference/configuration.md) and the explanation pages: [result model](explanation/result-model.md), [credentials](explanation/credentials.md), and [rate limiting and caching](explanation/rate-limiting.md).
 
 ## 1. Summary
 
@@ -401,7 +401,7 @@ The plugin is a singleton process per controller (§4.3). Leader election is on 
 7. Observability. In Phase 1, `Measurement.Metadata` records under the `cache` key whether the value was fresh, coalesced, or cached. Recording the bucket name, remaining budget, and limiter wait is planned, not built.
 
 ### 15.4 Configuration surface
-These fields are top-level, next to `site`/`timeoutSeconds`. All are optional. In Phase 1, only `cache.enabled` and `retry.maxRetries` have an effect. The plugin parses the other fields and ignores them, and `maxStaleness` does not exist yet. See the [configuration reference](configuration.md#rate-limit-and-cache-defaults).
+These fields are top-level, next to `site`/`timeoutSeconds`. All are optional. In Phase 1, only `cache.enabled` and `retry.maxRetries` have an effect. The plugin accepts the other fields without error and ignores them, and `maxStaleness` does not exist yet. See the [configuration reference](reference/configuration.md#rate-limit-and-cache-defaults).
 ```yaml
 rateLimit:
   enabled: true                 # default true

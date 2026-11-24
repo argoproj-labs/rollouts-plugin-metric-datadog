@@ -26,15 +26,15 @@ markdown_extensions:
 nav:
 - Overview: index.md
 - How-to guides:
-  - Install the plugin: install.md
-  - Migrate from the web provider: migration-web-provider.md
+  - Install the plugin: how-to/install.md
+  - Migrate from the web provider: how-to/migrate-web-provider.md
   - Gate a rollout on Datadog monitors: how-to/gate-on-monitors.md
   - Gate a rollout on SLOs: how-to/gate-on-slos.md
   - Gate a rollout on a metric query: how-to/gate-on-metrics.md
   - Combine monitors and SLOs: how-to/combine-sources.md
   - Tune timeouts for rate limits: how-to/tune-rate-limits.md
 - Reference:
-  - Configuration: configuration.md
+  - Configuration: reference/configuration.md
   - Result shapes and metadata: reference/results.md
   - Troubleshooting: reference/troubleshooting.md
 - Explanation:

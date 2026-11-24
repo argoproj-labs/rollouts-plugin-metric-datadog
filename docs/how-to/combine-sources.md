@@ -2,7 +2,7 @@
 
 This guide sets up one analysis that fails on an alerting monitor or on a breached SLO.
 
-Before you start, install the plugin. See [Install the plugin](../install.md).
+Before you start, install the plugin. See [Install the plugin](install.md).
 
 ## Create the AnalysisTemplate
 

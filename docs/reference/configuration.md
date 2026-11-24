@@ -60,7 +60,7 @@ The plugin resolves credentials in this order. The first match wins.
 
 All Secrets must have the `api-key` and `app-key` keys. An optional `address` key overrides the endpoint URL.
 
-CAUTION: Treat "can author AnalysisTemplates in namespace N" as "can read all Secrets in N". The `secretRef.name` value is unrestricted, so with `namespaced: true` anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can make the controller read any Secret there and send its `api-key` and `app-key` to Datadog. To limit this, restrict Secret names by naming convention, label selector, or an admission policy (for example OPA or Kyverno) that rejects unknown `secretRef.name` values. See [install.md](install.md#rbac) for details.
+CAUTION: Treat "can author AnalysisTemplates in namespace N" as "can read all Secrets in N". The `secretRef.name` value is unrestricted, so with `namespaced: true` anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can make the controller read any Secret there and send its `api-key` and `app-key` to Datadog. To limit this, restrict Secret names by naming convention, label selector, or an admission policy (for example OPA or Kyverno) that rejects unknown `secretRef.name` values. See [install.md](../how-to/install.md#rbac) for details.
 
 ## Site values
 
@@ -81,7 +81,7 @@ To route to a custom proxy or a local test server, use `address` instead of `sit
 
 `timeoutSeconds` sets the deadline for each measurement. The default is 30 seconds.
 
-The SDK retries 429 and 5xx responses up to `retry.maxRetries` times. On a 429 response, it waits for the time in the `X-RateLimit-Reset` header. The SDK stops retrying after four fifths of `timeoutSeconds`, which is 24 seconds at the default. To size these values, see [Tune timeouts for rate limits](how-to/tune-rate-limits.md).
+The SDK retries 429 and 5xx responses up to `retry.maxRetries` times. On a 429 response, it waits for the time in the `X-RateLimit-Reset` header. The SDK stops retrying after four fifths of `timeoutSeconds`, which is 24 seconds at the default. To size these values, see [Tune timeouts for rate limits](../how-to/tune-rate-limits.md).
 
 ## Metrics source
 
@@ -156,11 +156,11 @@ successCondition: "result >= 99.9"
 
 ## Result shapes
 
-For the `result` type of each source and the metadata keys of each measurement, see [Result shapes and measurement metadata](reference/results.md).
+For the `result` type of each source and the metadata keys of each measurement, see [Result shapes and measurement metadata](results.md).
 
 ## Search warnings
 
-If a monitor or SLO source is in search mode and has neither a `service:` tag nor a `query`, the plugin logs a warning. For the reason, see [About rate limiting and caching](explanation/rate-limiting.md#why-search-metrics-need-a-service-tag).
+If a monitor or SLO source is in search mode and has neither a `service:` tag nor a `query`, the plugin logs a warning. For the reason, see [About rate limiting and caching](../explanation/rate-limiting.md#why-search-metrics-need-a-service-tag).
 
 ## Rate limit and cache defaults
 
@@ -178,4 +178,4 @@ If a monitor or SLO source is in search mode and has neither a `service:` tag no
 | `metrics.interval` | `5m` | Live |
 | `slo.interval` (by-id) | `7d` | Live |
 
-In Phase 1, the plugin accepts `rateLimit.*` and `cache.ttl` without error and ignores them. The rate limiter uses a default bucket of 10 requests per second and at most 16 requests in flight. The cache TTL is 30 seconds. For how the limiter and the cache work, see [About rate limiting and caching](explanation/rate-limiting.md).
+In Phase 1, the plugin accepts `rateLimit.*` and `cache.ttl` without error and ignores them. The rate limiter uses a default bucket of 10 requests per second and at most 16 requests in flight. The cache TTL is 30 seconds. For how the limiter and the cache work, see [About rate limiting and caching](../explanation/rate-limiting.md).

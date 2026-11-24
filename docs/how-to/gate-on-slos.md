@@ -2,7 +2,7 @@
 
 This guide sets up a canary step that fails on a breached Datadog SLO for your service.
 
-Before you start, install the plugin. See [Install the plugin](../install.md). This guide uses SLOs that carry a `service:` tag and an `env:` tag.
+Before you start, install the plugin. See [Install the plugin](install.md). This guide uses SLOs that carry a `service:` tag and an `env:` tag.
 
 ## Create the AnalysisTemplate
 
@@ -74,4 +74,4 @@ successCondition: "result >= 99.9"
 
 By-id mode does not return the error budget. To use the error budget, use search mode.
 
-For all fields and result shapes, see the [configuration reference](../configuration.md#slo-source).
+For all fields and result shapes, see the [configuration reference](../reference/configuration.md#slo-source).

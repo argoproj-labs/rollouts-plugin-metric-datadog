@@ -119,4 +119,4 @@ argoproj-labs/rollouts-plugin-metric-datadog:
     query: "..."
 ```
 
-See [configuration.md](configuration.md#credential-resolution-order) for the full resolution order and the secretRef escalation note.
+See [configuration.md](../reference/configuration.md#credential-resolution-order) for the full resolution order and the secretRef escalation note.

@@ -2,7 +2,7 @@
 
 This guide sets up a canary step that compares a Datadog metric query for your service with a threshold. The example gates on the success rate of HTTP requests.
 
-Before you start, install the plugin. See [Install the plugin](../install.md).
+Before you start, install the plugin. See [Install the plugin](install.md).
 
 ## Create the AnalysisTemplate
 
@@ -79,4 +79,4 @@ spec:
               - templateName: datadog-error-rate
 ```
 
-To make sure that the plugin sends the query that you expect, read `metadata.resolvedQuery` in the AnalysisRun status. For all fields, see the [configuration reference](../configuration.md#metrics-source).
+To make sure that the plugin sends the query that you expect, read `metadata.resolvedQuery` in the AnalysisRun status. For all fields, see the [configuration reference](../reference/configuration.md#metrics-source).

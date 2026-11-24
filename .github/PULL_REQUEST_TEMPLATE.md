@@ -13,4 +13,4 @@
 - [ ] Errors in `Run()` produce an `Error` measurement phase, not `Failed`.
 - [ ] If I ran `go mod tidy`, I restored `github.com/DataDog/zstd` with `go get github.com/DataDog/zstd@v1.5.2`.
 - [ ] Tests that I added keep the `DD_API_KEY` and `DD_APP_KEY` environment guard.
-- [ ] If I changed the configuration schema or behavior, I updated `docs/configuration.md` and `examples/`.
+- [ ] If I changed the configuration schema or behavior, I updated `docs/reference/configuration.md` and `examples/`.
