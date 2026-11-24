@@ -3,6 +3,8 @@ site_url: https://rollouts-plugin-metric-datadog.readthedocs.io/
 repo_url: https://github.com/argoproj-labs/rollouts-plugin-metric-datadog
 theme:
   name: material
+  features:
+  - navigation.sections
   font:
     text: Work Sans
   palette:
@@ -23,10 +25,13 @@ markdown_extensions:
     permalink: true
 nav:
 - Overview: index.md
-- Installation: install.md
-- Configuration: configuration.md
-- Migrating from the web provider: migration-web-provider.md
-- Architecture: ARCHITECTURE.md
-- Contributing: CONTRIBUTING.md
+- How-to guides:
+  - Install the plugin: install.md
+  - Migrate from the web provider: migration-web-provider.md
+- Reference:
+  - Configuration: configuration.md
+- Project:
+  - Contributing: CONTRIBUTING.md
+  - Design spec: ARCHITECTURE.md
 exclude_docs: |
   requirements.txt
