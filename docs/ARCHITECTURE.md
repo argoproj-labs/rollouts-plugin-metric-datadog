@@ -205,12 +205,12 @@ slo:
   # interval: "7d"               # by-ID lookback window for history (default 7d)
   # field: sli                   # by-ID only: sli only (error-budget-remaining is not returned by GetSLOHistory — use search mode)
 ```
-- Search mode (default). `SearchSLO` with `query = <tags> <extra query>`. Datadog returns the breach state inline for each SLO. For ergonomics, the plugin lightly flattens `result` to `{ slos: [<attributes>...], facets: <...> }`. Each element carries `overall_status` (`[{state, status, target, errorBudgetRemaining, ...}]`, `state` ∈ breached|warning|ok|no_data), `name`, `all_tags`/`service_tags`/`env_tags`/`team_tags`, `groups`, `thresholds`:
+- Search mode (default). `SearchSLO` with `query = <tags> <extra query>`. Datadog returns the breach state inline for each SLO. For ergonomics, the plugin lightly flattens `result` to `{ slos: [<attributes>...], facets: <...> }`. Each element carries `overall_status` (`[{state, status, target, error_budget_remaining, ...}]`, `state` ∈ breached|warning|ok|no_data), `name`, `all_tags`/`service_tags`/`env_tags`/`team_tags`, `groups`, `thresholds`:
   ```yaml
   failureCondition: "any(result.slos, {any(.overall_status, {.state == 'breached'})})"
   successCondition: "all(result.slos, {all(.overall_status, {.state != 'breached'})})"
   ```
-- By-ID mode. `GetSLOHistory` over `interval`. `result` = SLI attainment % float, for example `successCondition: "result >= 99.9"`. `GetSLOHistory` does not return error-budget-remaining. Use search mode, which carries `errorBudgetRemaining` inline for each SLO through `overall_status`.
+- By-ID mode. `GetSLOHistory` over `interval`. `result` = SLI attainment % float, for example `successCondition: "result >= 99.9"`. `GetSLOHistory` does not return error-budget-remaining. Use search mode, which carries `error_budget_remaining` inline for each SLO through `overall_status`.
 
 #### apm
 ```yaml
