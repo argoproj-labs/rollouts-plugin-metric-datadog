@@ -114,7 +114,7 @@ When `DD_API_KEY` or `DD_APP_KEY` is set in the environment, `Run`-level tests s
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): the full design spec (architecture, result model, rate-limiting, phasing)
 - [docs/configuration.md](docs/configuration.md): the configuration schema, credential resolution, and site values
 - [docs/install.md](docs/install.md): installation from a release binary
-- [CONTRIBUTING.md](CONTRIBUTING.md): how to add a data source, run tests, and submit a PR
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md): how to add a data source, run tests, and submit a PR
 
 ---
 
