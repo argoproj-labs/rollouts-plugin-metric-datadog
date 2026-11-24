@@ -37,21 +37,17 @@ When you upgrade, update the version tag and the `sha256`. The [releases page](h
 
 The controller downloads the plugin again each time its pod starts. If GitHub is unreachable at that moment, the controller does not start. See [Some words of caution](https://argo-rollouts.readthedocs.io/en/stable/analysis/plugins/#some-words-of-caution) in the Argo Rollouts documentation.
 
----
-
 ## RBAC
 
-### Default install (controller-namespace secret)
+The plugin runs as a child process of the controller and reads Secrets through the controller ServiceAccount. The standard cluster-wide install gives the `argo-rollouts` ClusterRole `get`, `list`, and `watch` on Secrets in all namespaces. With that install, you need no additional RBAC, for the default `datadog` Secret (step 3 in [configuration.md](configuration.md#credential-resolution-order)) and for `secretRef.namespaced: true`.
 
-The default credential resolution (step 3 in [configuration.md](configuration.md#credential-resolution-order)) reads a Secret named `datadog` from the controller's own namespace. The standard `argo-rollouts` ClusterRole already grants `secrets/get` within its namespace. As a result, the default install requires no additional RBAC.
+CAUTION: Treat "can author AnalysisTemplates in namespace N" as "can read all Secrets in N". The `secretRef.name` value is unrestricted, so with `namespaced: true` anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can make the controller read any Secret there and send its `api-key` and `app-key` to Datadog. To limit this, restrict Secret names by naming convention, label selector, or an admission policy (for example OPA or Kyverno) that rejects unknown `secretRef.name` values.
 
-### Cross-namespace secretRef (`namespaced: true`)
+### Narrowed Secret access
 
-If a metric uses `secretRef.namespaced: true`, the plugin reads the named Secret from the AnalysisRun's namespace through the controller ServiceAccount. You must grant the controller `get` on Secrets in those namespaces.
+If you narrowed the controller ServiceAccount to Secrets in its own namespace, the default `datadog` Secret still works. If a metric uses `secretRef.namespaced: true`, the plugin reads the named Secret from the AnalysisRun's namespace, so you must grant the controller `get` on Secrets in each of those namespaces.
 
-CAUTION: Operators must treat "can author AnalysisTemplates in namespace N" as equivalent to "can read all Secrets in N". To restrict this, enforce eligible Secret names by naming convention, label selector, or an admission policy (for example, OPA/Kyverno) that rejects unknown `secretRef.name` values. This is the secretRef escalation risk. The `secretRef.name` value is unrestricted. With `namespaced: true`, the plugin reads the named Secret from the AnalysisRun's namespace through the controller ServiceAccount. As a result, anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can instruct the controller to read any Secret in that namespace. The controller then forwards the `api-key`/`app-key` of that Secret to Datadog.
-
-Example RBAC for cross-namespace reads:
+Example RBAC for one namespace:
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1

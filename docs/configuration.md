@@ -2,8 +2,6 @@
 
 You configure every metric in an AnalysisTemplate that uses this plugin under the plugin key `argoproj-labs/rollouts-plugin-metric-datadog`. Each metric entry must have exactly one of the three source blocks (`metrics`, `monitor`, `slo`).
 
----
-
 ## Full schema
 
 ```yaml
@@ -52,8 +50,6 @@ provider:
       slo: ...                       # See SLO Source below
 ```
 
----
-
 ## Credential resolution order
 
 The plugin resolves credentials in this order. The first match wins.
@@ -64,9 +60,7 @@ The plugin resolves credentials in this order. The first match wins.
 
 All Secrets must have the `api-key` and `app-key` keys. An optional `address` key overrides the endpoint URL.
 
-CAUTION: Operators must treat "can author AnalysisTemplates in namespace N" as equivalent to "can read all Secrets in N". As an alternative, restrict the eligible Secret names by convention, label, or admission policy. This is the secretRef escalation risk. The `secretRef.name` value is unrestricted. With `namespaced: true`, the plugin reads from the AnalysisRun's namespace through the controller ServiceAccount. As a result, anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can instruct the controller to read any Secret in that namespace. The controller then forwards the `api-key`/`app-key` of that Secret to Datadog. See [install.md](install.md#rbac) for details.
-
----
+CAUTION: Treat "can author AnalysisTemplates in namespace N" as "can read all Secrets in N". The `secretRef.name` value is unrestricted, so with `namespaced: true` anyone who can author AnalysisTemplates or AnalysisRuns in a namespace can make the controller read any Secret there and send its `api-key` and `app-key` to Datadog. To limit this, restrict Secret names by naming convention, label selector, or an admission policy (for example OPA or Kyverno) that rejects unknown `secretRef.name` values. See [install.md](install.md#rbac) for details.
 
 ## Site values
 
@@ -83,8 +77,6 @@ The `site` field controls the Datadog regional endpoint. These are the common va
 
 To route to a custom proxy or a local test server, use `address` instead of `site`.
 
----
-
 ## Timeout and rate-limit retry
 
 `timeoutSeconds` sets the hard deadline for each measurement. The SDK's internal retry timer is bounded to `timeout - timeout/5`, so the plugin can observe a clean context cancellation.
@@ -92,8 +84,6 @@ To route to a custom proxy or a local test server, use `address` instead of `sit
 For `metrics` and `monitor`, a 429 response causes the SDK to honor the `X-RateLimit-Reset` header. For the `/api/v1/query` endpoint, this header can be up to ~60 seconds. The retry fires only if time remains within the SDK retry window (`timeout * 4/5`).
 
 If you need the header-aware retry to fire before the context deadline, set `timeoutSeconds` to at least 60–90 seconds. With the default of 30s, the SDK retry window is only 24s. A Reset value near 60s will exhaust the deadline before the retry can run.
-
----
 
 ## Metrics source
 
@@ -121,8 +111,6 @@ successCondition: "result >= 0.95"
 
 `interval` defines the width of the `[now - interval, now]` window that the plugin sends to the API. If you omit it, the default is 5 minutes. For v1, the window bounds are seconds-precision Unix timestamps. For v2, they are milliseconds-precision Unix timestamps. The plugin computes the window at query time and does not cache it.
 
----
-
 ## Monitor source
 
 ```yaml
@@ -141,8 +129,6 @@ In search mode, the result shape is a `map[string]interface{}` that matches the 
 failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
 successCondition: "result.counts.status == nil || any(result.counts.status, {.name != 'Alert'})"
 ```
-
----
 
 ## SLO source
 
@@ -170,8 +156,6 @@ In by-id mode, the result shape is a scalar `float64` SLI value.
 successCondition: "result >= 99.9"
 ```
 
----
-
 ## Result shape table
 
 | Source | Mode | `result` type | Example condition |
@@ -182,15 +166,11 @@ successCondition: "result >= 99.9"
 | `slo` | search | `map` with `result.slos[].overall_status[].{state, ...}` | `any(result.slos, {any(.overall_status, {.state == 'breached'})})` |
 | `slo` | by-id | `float64` SLI value | `result >= 99.9` |
 
----
-
 ## Service-tag guidance
 
 A `service:...` tag on each metric makes the resolved query identify one gated resource. A monitor or SLO search scoped only by `env:production` (or similar broad tags) can match resources across multiple rollouts. If this occurs, the shared cache coalesces results from different services.
 
 A monitor or SLO source can be in search mode with neither a `service:...` tag nor a per-source `query`. In this case, the plugin emits a log warning. `Config.Warnings()` surfaces this warning. The examples in this repository all use `tags: ["service:my-cool-service", "env:production"]` as the recommended baseline.
-
----
 
 ## Rate limit and cache defaults
 
@@ -210,4 +190,4 @@ A monitor or SLO source can be in search mode with neither a `service:...` tag n
 
 In Phase 1, the plugin parses and stores `rateLimit.*` (enabled/budgetFraction/maxConcurrent/buckets) and `cache.ttl`, but these fields have no runtime effect. The rate limiter runs with fixed built-in defaults: 10 rps default bucket, 16 max concurrent. The cache TTL is fixed at 30s. These fields are present in the schema so that operator configurations written today will be forward-compatible when Phase 2 wires them.
 
-All concurrent measurements in the same plugin process share the rate limiter. The rate limiter learns per-endpoint Datadog bucket names from `X-RateLimit-Name` response headers. It then adapts its token-bucket ceiling accordingly (layer 2 adaptation). The concurrency semaphore (layer 4) prevents thundering-herd bursts during large canary waves.
+All concurrent measurements in the same plugin process share the rate limiter. The limiter learns each endpoint's Datadog bucket name from the `X-RateLimit-Name` response header, and sets that bucket's ceiling to half of the limit that Datadog reports. A cap of 16 in-flight requests stops bursts when many canaries start at once. Section 15.3 of the [architecture](ARCHITECTURE.md) describes each layer.

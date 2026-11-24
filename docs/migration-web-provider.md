@@ -2,8 +2,6 @@
 
 The Argo Rollouts built-in `web` metric provider can query Datadog. To do this, you construct the API URL manually, pass credentials as HTTP headers, and URI-encode tag filters into the query string. This plugin replaces that pattern with structured configuration, in-process credential resolution, and automatic tag merging. It keeps the same `failureCondition`/`successCondition` expressions.
 
----
-
 ## Before: `web` provider
 
 ```yaml
@@ -45,8 +43,6 @@ Pain points:
 - Template functions compute the time window (`from`/`to`). This calculation is fragile.
 - There is no rate limiting or caching across concurrent rollout waves.
 
----
-
 ## After: this plugin
 
 ```yaml
@@ -74,8 +70,6 @@ What changed:
 - The plugin computes the time window in-process. It computes `[now-5m, now]` automatically from `metrics.interval` (default 5m). You do not need template arithmetic.
 - Rate limiting and caching are on by default across all concurrent measurements.
 - The `successCondition` stays the same. The scalar result shape is identical to what `jsonPath` extracts from the v1 API.
-
----
 
 ## Monitor migration
 
@@ -107,8 +101,6 @@ failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
 ```
 
 The plugin returns the full `SearchMonitorGroupsResponse` as `result`. For this reason, the path becomes `result.counts.status`, not bare `result`. Update the condition to use this path.
-
----
 
 ## Credential reuse
 

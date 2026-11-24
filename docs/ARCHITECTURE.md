@@ -14,7 +14,7 @@ This design describes one Argo Rollouts metric plugin, which is a standalone Go 
 - `apm`: APM/span analytics aggregation (Phase 2)
 - `logs`: log analytics aggregation (Phase 2)
 
-The plugin extends Datadog analysis beyond the metrics-only built-in provider to monitors, SLOs, APM traces, and logs. It has first-class tag-based filtering across every source. As a result, canary/blue-green analysis can ask questions such as *"are any monitors for `service:checkout env:production` alerting?"* or *"is any matching SLO breached?"*. It does this without hand-built HTTP jobs.
+The plugin extends Datadog analysis beyond the metrics-only built-in provider to monitors, SLOs, APM traces, and logs. It filters every source by tags, so canary/blue-green analysis can ask questions such as *"are any monitors for `service:checkout env:production` alerting?"* or *"is any matching SLO breached?"*. It does this without hand-built HTTP jobs.
 
 ## 2. Background and motivation
 
@@ -38,13 +38,13 @@ failureCondition: result.counts.status != nil && any(result.counts.status, {.nam
 This plugin removes these limitations:
 - Manual URI-encoding of tags. The chart must pre-encode a space-separated tag string and thread it through args. The plugin takes a structured `tags: [...]` list and builds the query itself.
 - Credentials leak into the CR. `api-key`/`app-key` go through `args` into request headers, so they materialize in the AnalysisRun/Rollout objects. The plugin resolves the secret in-process, and keys never enter the CRs.
-- Monitors only. For SLOs, APM, and logs, you must hand-roll the same `web`-per-endpoint pattern again. The plugin unifies all five.
+- Monitors only. For SLOs, APM, and logs, you must hand-roll the same `web`-per-endpoint pattern again. The plugin covers monitors and SLOs in Phase 1, and APM and logs in Phase 2.
 
 ### 2.3 Prior art
 No dedicated community Datadog metric plugin exists. The canonical template is `argoproj-labs/rollouts-plugin-metric-sample-prometheus`. Today, Datadog support lives only in the metrics-only built-in provider. Monitors/SLOs/APM/logs as analysis sources are new functionality.
 
 ### 2.4 Alternatives considered
-The alternative was to extend the built-in `metricproviders/datadog` provider upstream instead of a standalone plugin. We rejected it. New capabilities come as standalone plugins because this is safer and more flexible. The plugin ships and versions independently of the controller, so no argo-rollouts release or controller upgrade is necessary to deliver or fix a source. The plugin also isolates the blast radius from the in-tree provider.
+The alternative was to extend the built-in `metricproviders/datadog` provider upstream instead of a standalone plugin. We rejected it. The plugin ships and versions independently of the controller, so no argo-rollouts release or controller upgrade is necessary to deliver or fix a source. The plugin also isolates the blast radius from the in-tree provider.
 
 We accept these costs: a separate repository to own, per-arch binary builds/releases, binary distribution and verification, and tracking the argo-rollouts module version that the binary builds against (see §4.4).
 
@@ -52,9 +52,9 @@ We accept these costs: a separate repository to own, per-arch binary builds/rele
 
 ### Goals
 - One plugin binary that covers all five sources, selectable per metric.
-- Tag-based filtering as a first-class, shared concept across all sources.
+- Tag-based filtering that works the same way across all sources.
 - Monitor behavior that is drop-in-compatible with the existing `web`-provider conditions.
-- Credentials resolved securely in-process (never in CRs). The resolution order mirrors the built-in provider, so existing `datadog` secrets work unchanged.
+- Credentials resolved in-process, never in CRs. The resolution order mirrors the built-in provider, so existing `datadog` secrets work unchanged.
 - Multi-region/site support (US1/EU/US3/US5/AP1/gov).
 - Condition semantics identical to every other Argo provider (reuse `evaluate.EvaluateResult`).
 - Rate-limit safety at fleet scale. Many rollouts share one Datadog org budget. Shared client-side limiting, coalescing, and caching stop them from throttling each other or failing canaries on `429`s (see §15).
@@ -79,10 +79,10 @@ type DataSource interface {
 }
 ```
 
-Shared infrastructure lives once in the `Run()` wrapper: Datadog client construction, credential resolution, site mapping, tag application, the `evaluate.EvaluateResult` call, and error→`Measurement` mapping. Each source is a focused, independently testable unit. New sources (apm, logs in phase 2) are new `DataSource` implementations with zero churn to the core.
+Shared infrastructure lives once in the `Run()` wrapper: Datadog client construction, credential resolution, site mapping, tag application, the `evaluate.EvaluateResult` call, and error→`Measurement` mapping. You can test each source on its own. New sources (apm, logs in phase 2) are new `DataSource` implementations with zero churn to the core.
 
 ### 4.2 Datadog access via the official Go SDK
-The plugin uses `github.com/DataDog/datadog-api-client-go/v2` (sub-packages `datadogV1`, `datadogV2`, `datadog`). The SDK covers every endpoint with typed request/response, one auth+site path, and built-in pagination. As a result, we do not hand-roll structs and parsing across ~7 heterogeneous endpoints.
+The plugin uses `github.com/DataDog/datadog-api-client-go/v2` (sub-packages `datadogV1`, `datadogV2`, `datadog`). The SDK covers every endpoint with typed request/response, one auth+site path, and built-in pagination, so we do not hand-roll structs and parsing across ~7 heterogeneous endpoints.
 
 | Source | SDK call | Endpoint |
 |---|---|---|
@@ -188,7 +188,7 @@ monitor:
   failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
   successCondition: "result.counts.status == nil || any(result.counts.status, {.name != 'Alert'})"
   ```
-  The plugin drops one field from the response: `counts.tag`. Datadog computes that facet over the entire matched set and caps it at 1000 entries. As a result, it scales with the org, not with the query. In a measurement against a real org, it was 54KB of an 80KB measurement value. The `counts.status` field that these conditions read was 116 bytes.
+  The plugin drops one field from the response: `counts.tag`. Datadog computes that facet over the entire matched set and caps it at 1000 entries, so it scales with the org, not with the query. In a measurement against a real org, it was 54KB of an 80KB measurement value. The `counts.status` field that these conditions read was 116 bytes.
 
   Argo Rollouts retains 10 measurements per metric. Keeping `counts.tag` cost ~800KB of AnalysisRun status per metric. It can push a multi-metric template past the 1.5MB request limit of etcd. `counts.status`, `counts.muted`, `counts.type`, `groups` and `metadata` are unchanged.
 - By-ID mode. `GetMonitor`. `result` = monitor JSON, for example `successCondition: "result.overall_state == 'OK'"`.
@@ -235,7 +235,7 @@ logs:
 
 ## 6. Result and verdict model
 
-The core principle is that the plugin never hard-codes pass/fail. Each source resolves to a value (scalar, string, or structured map). `Run()` calls `evaluate.EvaluateResult(value, metric, logCtx)`, the same evaluator that every Argo provider uses. As a result, `successCondition`/`failureCondition` semantics are identical. `evaluate.EvaluateResult` accepts `interface{}`, which is how the `web` provider already evaluates structured JSON. This is what makes the monitor/SLO structured results work.
+The plugin never hard-codes pass/fail. Each source resolves to a value (scalar, string, or structured map). `Run()` calls `evaluate.EvaluateResult(value, metric, logCtx)`, the same evaluator that every Argo provider uses. As a result, `successCondition`/`failureCondition` semantics are identical. `evaluate.EvaluateResult` accepts `interface{}`, which lets the monitor and SLO sources return structured JSON, the same way the `web` provider does.
 
 The Datadog SDK returns typed Go structs, but the `web` provider feeds raw `map[string]interface{}`. Each structured source marshals its typed SDK response to JSON and re-unmarshals it into `map[string]interface{}` before `EvaluateResult`. This keeps existing `web`-provider conditions (for example `result.counts.status`) working unchanged. A §12 test proves that the field names match the raw Datadog API JSON that the conditions traverse. Without this conversion, a migrated condition can silently stop matching.
 
@@ -265,7 +265,7 @@ The metric scope lives inside the query braces. The plugin merges tags into the 
 The plugin joins tags into the search `query`, for example `service:my-cool-service env:production`. It combines them with the optional `query` terms of each source, for example `muted:false`.
 
 ### 7.4 By-ID modes
-When `monitor.id`/`slo.id` is set, the scope of the object is fixed, and `tags` do not apply. If tags are combined with a by-ID mode, the plugin rejects them at validation time with a configuration error and a clear message. Tag-driven group/SLI selection within a single object is out of scope. Use search mode for tag filtering.
+When `monitor.id`/`slo.id` is set, the scope of the object is fixed, and `tags` do not apply. If tags are combined with a by-ID mode, the plugin rejects them at validation time with a configuration error. Tag-driven group/SLI selection within a single object is out of scope. Use search mode for tag filtering.
 
 ## 8. Credentials, RBAC, region
 
@@ -277,7 +277,7 @@ When `monitor.id`/`slo.id` is set, the scope of the object is fixed, and `tags` 
 Secret keys: `api-key`, `app-key`, optional `address`. An existing `datadog` secret with `api-key`/`app-key` drops straight into step 3. Otherwise, the top-level `site` configuration field selects the region (§5.1, §8.3). The built-in provider has no `DD_SITE` env var and no `site` secret key.
 
 ### 8.2 RBAC
-The plugin runs as a child process of the controller and inherits its ServiceAccount. It uses in-cluster configuration to read secrets. The default argo-rollouts install grants the controller SA a cluster-scoped `secrets` get/list/watch ClusterRole. That ClusterRole already covers the cross-namespace case for `namespaced: true`. As a result, a default install requires no new RBAC. If an install narrowed the SA to namespace-scoped secret access, it must add a grant for any namespace that a `namespaced: true` secretRef targets.
+The plugin runs as a child process of the controller and inherits its ServiceAccount. It uses in-cluster configuration to read secrets. The default argo-rollouts install grants the controller SA a cluster-scoped `secrets` get/list/watch ClusterRole. That ClusterRole already covers the cross-namespace case for `namespaced: true`, so a default install requires no new RBAC. If an install narrowed the SA to namespace-scoped secret access, it must add a grant for any namespace that a `namespaced: true` secretRef targets.
 
 ### 8.3 Region / site
 Prefer `site`, mapped to the SDK `datadog.ContextServerVariables{"site": …}`. The plugin accepts `address` (full URL) for built-in compatibility, and `address` overrides the derived server. The plugin sets auth through `datadog.ContextAPIKeys` with `apiKeyAuth` and `appKeyAuth`.
@@ -286,11 +286,11 @@ Prefer `site`, mapped to the SDK `datadog.ContextServerVariables{"site": …}`. 
 
 - Any SDK error, `401`/`403` auth failure, or parse error → `metricutil.MarkMeasurementError(m, err)` (`Phase: Error` + message). This returns the measurement by value, so you must capture the result (`m = metricutil.MarkMeasurementError(m, err)`). The `consecutiveErrorLimit` of the controller (default 4) governs transient-error tolerance.
 - The HTTP timeout default is 30s, because aggregations are slower than point queries. You can override it with the top-level `timeoutSeconds`.
-- Aggregation latency/throttling (apm/logs). Wide windows, high-cardinality filters, or Datadog rate limiting (`429`) can make a synchronous `AggregateSpans`/`AggregateLogs` call exceed the timeout. The timeout maps to `Phase: Error` and consumes `consecutiveErrorLimit`. As a result, a canary fails on Datadog latency, not on a real regression. §15 gives the defenses in detail: a shared client-side rate limiter, header-adaptive control, request coalescing plus a short-TTL cache, header-aware SDK retry, and last-known-good degradation. The defenses never produce `Failed`.
+- Aggregation latency/throttling (apm/logs). Wide windows, high-cardinality filters, or Datadog rate limiting (`429`) can make a synchronous `AggregateSpans`/`AggregateLogs` call exceed the timeout. The timeout maps to `Phase: Error` and consumes `consecutiveErrorLimit`. As a result, a canary fails on Datadog latency, not on a real regression. §15 gives the defenses in detail: a shared client-side rate limiter, header-adaptive control, request coalescing plus a short-TTL cache, and header-aware SDK retry. The defenses never produce `Failed`.
 - Empty results:
   - Structured sources (monitor/slo) pass the real (possibly empty) response to expr, so conditions like `result.counts.status == nil || …` keep working. Emptiness is the concern of the condition author.
   - If the result is empty, scalar sources (metrics/apm/logs) pass a nil value. Then `evaluate.EvaluateResult` surfaces a clear "no value" error (`Phase: Error`), identical to the built-in provider.
-- Observability. `Measurement.Metadata` (and `GetMetadata`) records the resolved query/endpoint and applied tags. As a result, operators see exactly what was queried from the AnalysisRun status.
+- Observability. `Measurement.Metadata` (and `GetMetadata`) records the resolved query/endpoint and applied tags. Operators can see in the AnalysisRun status exactly what the plugin queried.
 
 ## 10. Multi-source composition
 
@@ -319,7 +319,7 @@ spec:
       failureCondition: "any(result.slos, {any(.overall_status, {.state == 'breached'})})"
 ```
 
-The multiple-`metrics[]` model expresses OR-of-failures cleanly (any metric that fails fails the run). But it cannot express a single cross-source AND in one expression. As a result, you must model a use case like "monitor alerting AND SLO budget < 10%" as two independent signals (OR semantics). One combined condition is not possible. Genuine cross-source AND within a single expression is explicitly out of scope (see §3 non-goals).
+The multiple-`metrics[]` model expresses OR-of-failures cleanly (any metric that fails fails the run). It cannot express a cross-source AND in one expression, so you model a use case like "monitor alerting AND SLO budget < 10%" as two independent signals (OR semantics). See §3 non-goals.
 
 ## 11. Repository layout
 
@@ -356,7 +356,7 @@ For code reuse, the plugin imports argo-rollouts as a Go module dependency. It i
 Phase 1 covers scaffolding and the synchronous lookup sources:
 - The go-plugin handshake, RPC implementation, configuration and validation, SDK client construction, credential resolver, and the `DataSource` interface and dispatch.
 - `metrics` (built-in parity), `monitor` (tag search + by-id, the migration target), `slo` (tag search + by-id).
-- Rate-limit and scale core (§15): shared limiter, header-adaptive control, coalescing plus short-TTL cache, header-aware SDK retry, last-known-good degradation.
+- Rate-limit and scale core (§15): shared limiter, header-adaptive control, coalescing plus short-TTL cache, header-aware SDK retry.
 - Docs and examples, including the `web`-provider → plugin migration.
 
 Phase 2 covers the aggregation sources:
@@ -389,16 +389,16 @@ There are two scale effects:
 The plugin is a singleton process per controller (§4.3). Leader election is on by default, so exactly one controller is active cluster-wide. As a result, a single in-process layer sees 100% of the Datadog traffic of the cluster and can coordinate globally. The controller calls `Run()` from up to 30 concurrent workers (plus per-run metric goroutines), so this shared state must be goroutine-safe.
 
 ### 15.3 Defense layers (shared `Run()` wrapper, Phase 1 core)
-1. Shared token-bucket limiter. There is one bucket per Datadog rate-limit group, keyed by the `X-RateLimit-Name` response header. Each bucket is sized to a configurable fraction of the budget. `Run()` blocks on the limiter before it issues a request, and this converts bursts into a sustained sub-ceiling rate. The limiter is goroutine-safe (`golang.org/x/time/rate`).
+1. Shared token-bucket limiter. There is one bucket per Datadog rate-limit group, keyed by the `X-RateLimit-Name` response header. Each bucket uses half of the ceiling that Datadog reports. In Phase 1 the fraction is fixed at 0.5, and `rateLimit.budgetFraction` is parsed but ignored. `Run()` blocks on the limiter before it issues a request, and this converts bursts into a sustained sub-ceiling rate. The limiter is goroutine-safe (`golang.org/x/time/rate`).
 2. Adaptive control from headers. Every response carries `X-RateLimit-Limit/Remaining/Reset/Name`. The limiter learns the (often undocumented) ceiling from `X-RateLimit-Limit` and slows as `Remaining`→0. On `429`, it waits `X-RateLimit-Reset` seconds. Datadog sends no `Retry-After`.
-3. Coalescing and short-TTL cache. Singleflight collapses identical concurrent queries. The plugin caches results for a short TTL (≤ the metric `interval`), keyed by the fully-resolved query + tags + window + site. Many rollouts that share the same `service:`/`env:` tags then cost one upstream call instead of N. This is what makes apm/logs survivable at scale. Teams that need strictly per-call freshness can opt out per metric.
+3. Coalescing and short-TTL cache. Singleflight collapses identical concurrent queries. The plugin caches results for a short TTL (≤ the metric `interval`), keyed by the fully-resolved query + tags + window + site. Many rollouts that share the same `service:`/`env:` tags then cost one upstream call instead of N. Without it, apm/logs cannot run at scale. A metric with `cache.enabled: false` skips the TTL read, but identical concurrent queries still coalesce. In Phase 1 the TTL is fixed at 30s.
 4. Concurrency semaphore. It caps in-flight outbound calls, regardless of how many `Run()`s arrive at once.
 5. SDK retry enabled. `RetryConfiguration.EnableRetry = true` (the SDK default is off), so the SDK retries `429`/5xx and honors `X-Ratelimit-Reset`. `MaxRetries`/`HTTPRetryTimeout` are bounded below the plugin `timeoutSeconds`.
-6. Safe degradation (never `Failed`). Under pressure, the order is limiter wait → coalesced/cached value → SDK retry. If the request is still throttled within the `Run()` deadline, the plugin serves the last-known-good cached value when one exists within `maxStaleness`. Otherwise, it returns `Error`, bounded by `consecutiveErrorLimit`, and recovers automatically on the next success. A throttle never yields `Failed`.
-7. Observability. `Measurement.Metadata` records the bucket (`X-RateLimit-Name`), remaining budget, limiter wait, and whether the value was fresh, coalesced, cached, or last-good. As a result, operators see budget pressure in the AnalysisRun status.
+6. Safe degradation (never `Failed`). Under pressure, the order is limiter wait → coalesced/cached value → SDK retry. If the request is still throttled at the `Run()` deadline, the plugin returns `Error`, bounded by `consecutiveErrorLimit`, and recovers on the next success. Phase 1 never serves a stale value. A last-known-good fallback within `maxStaleness` is planned, not built.
+7. Observability. In Phase 1, `Measurement.Metadata` records under the `cache` key whether the value was fresh, coalesced, or cached. Recording the bucket name, remaining budget, and limiter wait is planned, not built.
 
 ### 15.4 Configuration surface
-These fields are top-level, next to `site`/`timeoutSeconds`. All are optional and have safe defaults:
+These fields are top-level, next to `site`/`timeoutSeconds`. All are optional. In Phase 1, only `cache.enabled` and `retry.maxRetries` have an effect. The plugin parses the other fields and ignores them, and `maxStaleness` does not exist yet. See the [configuration reference](configuration.md#rate-limit-and-cache-defaults).
 ```yaml
 rateLimit:
   enabled: true                 # default true
@@ -417,10 +417,10 @@ retry:
 ### 15.5 Operator guidance
 - Coordinate `budgetFraction` with the other Datadog API consumers of the org.
 - Prefer longer `interval`s and shared tags for apm/logs metrics. Keep per-rollout high-frequency log/APM polling as the exception, because it does not scale.
-- Request per-bucket limit increases from Datadog with the `X-RateLimit-Name` value that `Measurement.Metadata` shows.
+- Request per-bucket limit increases from Datadog with the `X-RateLimit-Name` value from the Datadog response headers.
 - If possible, stagger large deploy waves. The limiter de-synchronizes bursts, but it cannot create budget that does not exist.
 
 ### 15.6 Testing
 - Limiter/concurrency. Assert that issued QPS stays under the configured ceiling under N concurrent `Run()`s.
-- Coalescing/cache. Assert that K identical concurrent queries produce 1 upstream call. Assert TTL, `maxStaleness`, and last-good degradation.
-- 429 handling. An `httptest.Server` that returns `429` + `X-RateLimit-Reset` asserts retry timing and the Error-vs-last-good path. It also asserts that a throttle never yields `Failed`.
+- Coalescing/cache. Assert that K identical concurrent queries produce 1 upstream call. Assert the TTL.
+- 429 handling. An `httptest.Server` that returns `429` + `X-RateLimit-Reset` asserts retry timing and the `Error` path. It also asserts that a throttle never yields `Failed`.
