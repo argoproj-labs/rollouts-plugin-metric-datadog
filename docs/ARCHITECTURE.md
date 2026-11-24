@@ -188,7 +188,7 @@ monitor:
 ```
 - Search mode (default). `SearchMonitorGroups` with `query = <tags> <extra query>`. `result` = the group-search response (`counts.status` `[{name, count}]`, `groups`, `metadata`). The shape is unchanged, so existing conditions work:
   ```yaml
-  failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
+  failureCondition: "result.counts.status != nil && any(result.counts.status, {.name == 'Alert' && .count > 0})"
   successCondition: "result.counts.status == nil || any(result.counts.status, {.name != 'Alert'})"
   ```
   The plugin drops one field from the response: `counts.tag`. Datadog computes that facet over the entire matched set and caps it at 1000 entries, so it scales with the org, not with the query. In a measurement against a real org, it was 54KB of an 80KB measurement value. The `counts.status` field that these conditions read was 116 bytes.
@@ -310,7 +310,7 @@ spec:
           argoproj-labs/rollouts-plugin-metric-datadog:
             tags: ["service:my-cool-service", "env:production"]
             monitor: {}
-      failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
+      failureCondition: "result.counts.status != nil && any(result.counts.status, {.name == 'Alert' && .count > 0})"
     - name: slos
       interval: 1m
       failureLimit: 2

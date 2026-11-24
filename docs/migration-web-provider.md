@@ -97,10 +97,12 @@ provider:
       tags: ["service:my-cool-service", "env:production"]
       monitor:
         query: "muted:false"
-failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
+failureCondition: "result.counts.status != nil && any(result.counts.status, {.name == 'Alert' && .count > 0})"
 ```
 
 The plugin returns the full `SearchMonitorGroupsResponse` as `result`. For this reason, the path becomes `result.counts.status`, not bare `result`. Update the condition to use this path.
+
+If the search matches no monitor groups, the plugin result has no `counts.status` field. Keep the `result.counts.status != nil &&` guard, or the measurement ends in the `Error` phase.
 
 ## Credential reuse
 

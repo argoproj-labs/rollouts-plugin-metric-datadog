@@ -26,7 +26,9 @@ The monitor search result drops one field, `counts.tag`. Datadog computes that f
 
 The plugin turns every error into an `Error` measurement. This covers a bad configuration, a missing Secret, a Datadog error or timeout, and a condition that cannot evaluate the result. For the reason, see [About rate limiting and caching](rate-limiting.md#why-throttling-gives-error-not-failed).
 
-Empty results follow the source type. A metrics query or SLO by-id call with no data returns `nil`. Most conditions cannot compare `nil`, so the measurement becomes an `Error` with the message `metric result is nil or empty`. Even when a monitor or SLO search matches nothing, it returns the real response. The condition decides what an empty match means, for example `result.counts.status == nil`.
+Empty results follow the source type. A metrics query or SLO by-id call with no data returns `nil`. Argo Rollouts compiles each condition against the type of `result`. A plain comparison with `nil` therefore ends in an `Error` with the message `metric result is nil or empty`. To choose a value for no data, use the `default` function, for example `default(result, 1.0) >= 0.95`.
+
+Even when a monitor or SLO search matches nothing, it returns the real response, and the condition decides what an empty match means. The conversion to a map drops empty lists, so a monitor search with no groups has no `counts.status` field. Guard monitor conditions with `result.counts.status != nil`.
 
 ## One source per metric
 
