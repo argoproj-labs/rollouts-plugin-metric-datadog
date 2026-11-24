@@ -154,15 +154,9 @@ In by-id mode, the result shape is a scalar `float64` SLI value.
 successCondition: "result >= 99.9"
 ```
 
-## Result shape table
+## Result shapes
 
-| Source | Mode | `result` type | Example condition |
-|---|---|---|---|
-| `metrics` | v1 or v2 | `float64` (nil if no data) | `result >= 0.95` |
-| `monitor` | search | `map` with `result.counts.status[].{name, count}` | `result.counts.status != nil && any(result.counts.status, {.name == 'Alert' && .count > 0})` |
-| `monitor` | by-id | `map` with the full Monitor JSON | field access per Monitor schema |
-| `slo` | search | `map` with `result.slos[].overall_status[].{state, ...}` | `any(result.slos, {any(.overall_status, {.state == 'breached'})})` |
-| `slo` | by-id | `float64` SLI value | `result >= 99.9` |
+For the `result` type of each source and the metadata keys of each measurement, see [Result shapes and measurement metadata](reference/results.md).
 
 ## Search warnings
 
