@@ -13,5 +13,5 @@ spec:
             tags: ["service:my-cool-service", "env:production"]
             monitor:
               query: "muted:false"
-      failureCondition: "any(result.counts.status, {.name == 'Alert' && .count > 0})"
+      failureCondition: "result.counts.status != nil && any(result.counts.status, {.name == 'Alert' && .count > 0})"
       successCondition: "result.counts.status == nil || any(result.counts.status, {.name != 'Alert'})"
