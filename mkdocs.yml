@@ -35,6 +35,7 @@ nav:
   - Tune timeouts for rate limits: how-to/tune-rate-limits.md
 - Reference:
   - Configuration: configuration.md
+  - Troubleshooting: reference/troubleshooting.md
 - Explanation:
   - About the result model: explanation/result-model.md
   - About credentials and the secretRef risk: explanation/credentials.md
