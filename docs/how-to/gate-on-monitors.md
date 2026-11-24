@@ -34,7 +34,15 @@ Before you start, install the plugin. See [Install the plugin](install.md). This
     kubectl apply -n my-namespace -f datadog-monitors.yaml
     ```
 
-The plugin joins `tags` and `query` into one monitor search. The `muted:false` term leaves out muted monitors. If any monitor group in the result is in `Alert`, the measurement is `Failed`. If the search matches no monitor groups, the result has no `counts.status` field, so keep the `!= nil` guard.
+The plugin joins `tags` and `query` into one monitor search. The `muted:false` term leaves out muted monitors. If any monitor group in the result is in `Alert`, the measurement is `Failed`. If the search matches no monitor groups, `counts.status` is an empty list. Neither condition is then true, so the measurement is `Inconclusive`, and Argo Rollouts pauses the rollout.
+
+To let a search with no groups pass, use this `successCondition` instead:
+
+```yaml
+successCondition: "result.counts.status == nil || none(result.counts.status, {.name == 'Alert' && .count > 0})"
+```
+
+An empty search can also mean that the tags match nothing. Before you use this condition, make sure that `metadata.resolvedQuery` finds your monitors.
 
 ## Add the analysis to the Rollout
 

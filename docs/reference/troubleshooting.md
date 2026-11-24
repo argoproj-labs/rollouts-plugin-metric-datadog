@@ -49,7 +49,7 @@ Each Datadog error starts with the name of the call: `datadog v2 scalar query:`,
 | Message | Cause | Fix |
 |---|---|---|
 | `could not evaluate successCondition "...": metric result is nil or empty: no data returned from the metric provider` | A metric query or SLO by-id call returned no data. The same message appears for `failureCondition`. | Make sure that the query matches data in the window. To give no data a value, use `default(result, <value>)`. See [About the result model](../explanation/result-model.md#errors-are-never-failures). |
-| `could not evaluate failureCondition "...": reflect: call of reflect.Value.Len on zero Value` | A monitor search matched no groups, so the result has no `counts.status` field. The same message appears for any `any` or `all` call on a missing list. | Start the condition with `result.counts.status != nil &&`. See [Gate a rollout on Datadog monitors](../how-to/gate-on-monitors.md). |
+| `could not evaluate failureCondition "...": reflect: call of reflect.Value.Len on zero Value` | A condition calls `any`, `all`, or `none` on a list field that the result does not have. An example is a response without `counts.status`. | Guard the field with `!= nil`, as in `result.counts.status != nil && any(...)`. |
 | `could not evaluate ...: cannot fetch <field> from <nil>` | The condition reads a field below a field that the result does not have. | Fix the field path, or guard the parent field with `!= nil`. |
 
 ## Other symptoms

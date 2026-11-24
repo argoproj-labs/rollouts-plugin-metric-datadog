@@ -12,7 +12,7 @@ This page lists the `result` value of each source. It also lists the fields that
 | `slo` | search | map with `result.slos[].overall_status[].{state, error_budget_remaining, ...}` | `any(result.slos, {any(.overall_status, {.state == 'breached'})})` |
 | `slo` | by-id | `float64` SLI value. `nil` for no data. | `result >= 99.9` |
 
-Map results use the field names of the Datadog API JSON. The plugin drops fields that Datadog left empty, including empty lists. It also drops `counts.tag` from monitor search results.
+Map results use the field names of the Datadog API JSON. A field that the Datadog response leaves out is missing from the map, and an empty list stays an empty list. The plugin drops `counts.tag` from monitor search results.
 
 Values of the monitor `overall_state` field: `Alert`, `Warn`, `No Data`, `OK`, `Ignored`, `Skipped`, `Unknown`.
 

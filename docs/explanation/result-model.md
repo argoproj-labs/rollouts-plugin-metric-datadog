@@ -28,7 +28,7 @@ The plugin turns every error into an `Error` measurement. This covers a bad conf
 
 Empty results follow the source type. A metrics query or SLO by-id call with no data returns `nil`. Argo Rollouts compiles each condition against the type of `result`. A plain comparison with `nil` therefore ends in an `Error` with the message `metric result is nil or empty`. To choose a value for no data, use the `default` function, for example `default(result, 1.0) >= 0.95`.
 
-Even when a monitor or SLO search matches nothing, it returns the real response, and the condition decides what an empty match means. The conversion to a map drops empty lists, so a monitor search with no groups has no `counts.status` field. Guard monitor conditions with `result.counts.status != nil`.
+Even when a monitor or SLO search matches nothing, it returns the real response, and the condition decides what an empty match means. For a monitor search with no groups, `counts.status` is an empty list. With the example conditions, neither condition is then true, so the measurement is `Inconclusive`.
 
 ## One source per metric
 
