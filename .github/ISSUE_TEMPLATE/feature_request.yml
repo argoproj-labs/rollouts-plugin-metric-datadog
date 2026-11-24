@@ -1,0 +1,49 @@
+name: Feature request
+description: Ask for a new data source, a new configuration field, or other new behavior.
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - New data source
+        - metrics source
+        - monitor source
+        - slo source
+        - Configuration or credentials
+        - Rate limiting or caching
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Tell us what you cannot do today, and which rollout gate needs it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Tell us how the plugin can solve the problem. For a new data source, name the Datadog API endpoint.
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example configuration
+      description: Show the AnalysisTemplate metric that you want to write.
+      render: yaml
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Tell us what you use now, for example the built-in `web` provider or a Datadog query workaround.
