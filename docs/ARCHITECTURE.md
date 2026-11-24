@@ -4,6 +4,9 @@
 - Status: design, approved for spec review
 - Upstream repository: `github.com/argoproj-labs/rollouts-plugin-metric-datadog`
 
+!!! note "Design record"
+    This page is the design spec from 2026-06-18. It records the planned design, including Phase 2 sources and settings that Phase 1 does not have. For what the plugin does today, see the [configuration reference](configuration.md) and the explanation pages: [result model](explanation/result-model.md), [credentials](explanation/credentials.md), and [rate limiting and caching](explanation/rate-limiting.md).
+
 ## 1. Summary
 
 This design describes one Argo Rollouts metric plugin, which is a standalone Go binary. The plugin lets AnalysisTemplates query Datadog across five data sources: three in Phase 1 and two in Phase 2 (see §13):
