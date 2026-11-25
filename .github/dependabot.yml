@@ -16,9 +16,3 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-
-  # Docker base images in the Dockerfile
-  - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "weekly"

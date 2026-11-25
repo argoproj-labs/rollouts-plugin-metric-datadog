@@ -1,0 +1,92 @@
+name: Bug report
+description: Report a measurement, configuration, or install problem with the plugin.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before you file a bug, read the [configuration reference](https://rollouts-plugin-metric-datadog.readthedocs.io/en/latest/configuration/). Remove API keys, application keys, and Secret values from everything that you paste below.
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin version
+      description: The release tag in the plugin `location` URL of the `argo-rollouts-config` ConfigMap.
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: rollouts-version
+    attributes:
+      label: Argo Rollouts version
+      placeholder: v1.10.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Source
+      description: The source block that the failing metric uses.
+      options:
+        - metrics
+        - monitor
+        - slo
+        - Not specific to one source
+    validations:
+      required: true
+
+  - type: input
+    id: site
+    attributes:
+      label: Datadog site
+      description: The `site` or `address` value. Leave it empty if you use the default.
+      placeholder: datadoghq.com
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Tell us what the plugin did. Include the measurement phase (Successful, Failed, Error, or Inconclusive) if a measurement ran.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: analysis-template
+    attributes:
+      label: AnalysisTemplate metric
+      description: Paste the metric entry that uses the plugin.
+      render: yaml
+    validations:
+      required: true
+
+  - type: textarea
+    id: measurement
+    attributes:
+      label: AnalysisRun measurement
+      description: Paste the measurement from `kubectl get analysisrun <name> -o yaml`, with its `phase`, `message`, and `value`.
+      render: yaml
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Controller logs
+      description: Paste the Argo Rollouts controller log lines for the plugin.
+      render: text
+
+  - type: checkboxes
+    id: redacted
+    attributes:
+      label: Confirmation
+      options:
+        - label: I removed all API keys, application keys, and Secret values from this report.
+          required: true

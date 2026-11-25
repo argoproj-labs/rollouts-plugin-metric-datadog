@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 960 696" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="architecture-title architecture-desc" id="architecture-root">
+<title id="architecture-title">Argo Rollouts Datadog metric plugin architecture</title>
+<desc id="architecture-desc">The Argo Rollouts controller reads the metric from an AnalysisTemplate and calls the plugin for each measurement. The plugin resolves Datadog keys from a Kubernetes Secret, checks a shared cache, queries the metrics, monitor, or SLO source through a rate limiter to the Datadog API, and returns the measurement to the controller.</desc>
+<defs>
+      <style>#architecture-root { font-family: 'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif; color: #1f2329; }
+      #architecture-root .diagram-container { width: 100%; overflow-x: auto; }
+      @media print {
+#architecture-root .diagram-container { overflow-x: visible; }
+}</style>
+<marker id="architecture-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4e5d6c"/></marker>
+<marker id="architecture-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#00796b"/></marker>
+<marker id="architecture-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<rect x="40" y="184" width="880" height="292" rx="8" fill="#1f2329" stroke="#1f2329" stroke-width="0.8" fill-opacity="0.02" stroke-opacity="0.10"/>
+<rect x="352" y="188" width="256" height="14" rx="2" fill="#ffffff"/>
+<text x="480" y="198" fill="#5b6875" font-size="9" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.14em">PLUGIN PROCESS · CONTROLLER CHILD</text>
+<line x1="288" y1="80" x2="368" y2="80" stroke="#4e5d6c" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+<path d="M 432,120 V 144 Q 432,152 424,152 H 184 Q 176,152 176,160 V 232" fill="none" stroke="#00796b" stroke-width="1.4" marker-end="url(#architecture-arrow-accent)"/>
+<path d="M 856,232 V 88 Q 856,80 848,80 H 592" fill="none" stroke="#4e5d6c" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#architecture-arrow)"/>
+<line x1="288" y1="272" x2="368" y2="272" stroke="#4e5d6c" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+<line x1="592" y1="272" x2="672" y2="272" stroke="#4e5d6c" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+<line x1="784" y1="344" x2="784" y2="372" stroke="#4e5d6c" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+<line x1="176" y1="312" x2="176" y2="528" stroke="#4e5d6c" stroke-width="1.2" marker-end="url(#architecture-arrow)"/>
+<line x1="784" y1="452" x2="784" y2="528" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+<rect x="300" y="56" width="56" height="14" rx="2" fill="#ffffff"/>
+<text x="328" y="67" fill="#5b6875" font-size="10" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">METRIC</text>
+<rect x="252" y="128" width="100" height="14" rx="2" fill="#ffffff"/>
+<text x="302" y="139" fill="#00796b" font-size="10" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">RUN() NET/RPC</text>
+<rect x="676" y="56" width="88" height="14" rx="2" fill="#ffffff"/>
+<text x="720" y="67" fill="#5b6875" font-size="10" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">MEASUREMENT</text>
+<rect x="304" y="248" width="48" height="14" rx="2" fill="#ffffff"/>
+<text x="328" y="259" fill="#5b6875" font-size="10" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">CREDS</text>
+<rect x="600" y="248" width="64" height="14" rx="2" fill="#ffffff"/>
+<text x="632" y="259" fill="#5b6875" font-size="10" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">ON MISS</text>
+<rect x="188" y="496" width="44" height="14" rx="2" fill="#ffffff"/>
+<text x="210" y="507" fill="#5b6875" font-size="10" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">READ</text>
+<rect x="796" y="496" width="52" height="14" rx="2" fill="#ffffff"/>
+<text x="822" y="507" fill="#2e5aa8" font-size="10" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.06em">HTTPS</text>
+<rect x="64" y="40" width="224" height="80" rx="6" fill="#ffffff"/>
+<rect x="64" y="40" width="224" height="80" rx="6" fill="#4e5d6c" stroke="#5b6875" stroke-width="1" fill-opacity="0.10"/>
+<rect x="72" y="48" width="28" height="14" rx="2" fill="none" stroke="#4e5d6c" stroke-width="0.8" stroke-opacity="0.40"/>
+<text x="86" y="58" fill="#5b6875" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">CRD</text>
+<text x="176" y="88" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">AnalysisTemplate</text>
+<text x="176" y="108" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">tags · source · conditions</text>
+<rect x="368" y="40" width="224" height="80" rx="6" fill="#ffffff"/>
+<rect x="368" y="40" width="224" height="80" rx="6" fill="#ffffff" stroke="#1f2329" stroke-width="1"/>
+<rect x="376" y="48" width="28" height="14" rx="2" fill="none" stroke="#1f2329" stroke-width="0.8" stroke-opacity="0.40"/>
+<text x="390" y="58" fill="#1f2329" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">K8S</text>
+<text x="480" y="88" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Rollouts controller</text>
+<text x="480" y="108" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">AnalysisRun · each interval</text>
+<rect x="64" y="232" width="224" height="80" rx="6" fill="#ffffff"/>
+<rect x="64" y="232" width="224" height="80" rx="6" fill="#ffffff" stroke="#1f2329" stroke-width="1"/>
+<rect x="72" y="240" width="36" height="14" rx="2" fill="none" stroke="#1f2329" stroke-width="0.8" stroke-opacity="0.40"/>
+<text x="90" y="250" fill="#1f2329" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">AUTH</text>
+<text x="176" y="280" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Credential resolver</text>
+<text x="176" y="300" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">secretRef → env → datadog</text>
+<rect x="368" y="232" width="224" height="80" rx="6" fill="#ffffff"/>
+<rect x="368" y="232" width="224" height="80" rx="6" fill="#ffffff" stroke="#1f2329" stroke-width="1"/>
+<rect x="376" y="240" width="40" height="14" rx="2" fill="none" stroke="#1f2329" stroke-width="0.8" stroke-opacity="0.40"/>
+<text x="396" y="250" fill="#1f2329" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">CACHE</text>
+<text x="480" y="280" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Shared cache</text>
+<text x="480" y="300" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">30 s TTL · coalescing</text>
+<rect x="672" y="232" width="224" height="112" rx="6" fill="#ffffff"/>
+<rect x="672" y="232" width="224" height="112" rx="6" fill="#00796b" stroke="#00796b" stroke-width="1" fill-opacity="0.08"/>
+<rect x="680" y="240" width="28" height="14" rx="2" fill="none" stroke="#00796b" stroke-width="0.8" stroke-opacity="0.50"/>
+<text x="694" y="250" fill="#00796b" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">SRC</text>
+<text x="784" y="280" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Data sources</text>
+<text x="784" y="300" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">metrics · v1 or v2 formula</text>
+<text x="784" y="316" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">monitor · search or by ID</text>
+<text x="784" y="332" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">slo · search or by ID</text>
+<rect x="672" y="372" width="224" height="80" rx="6" fill="#ffffff"/>
+<rect x="672" y="372" width="224" height="80" rx="6" fill="#ffffff" stroke="#1f2329" stroke-width="1"/>
+<rect x="680" y="380" width="36" height="14" rx="2" fill="none" stroke="#1f2329" stroke-width="0.8" stroke-opacity="0.40"/>
+<text x="698" y="390" fill="#1f2329" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">RATE</text>
+<text x="784" y="420" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Rate limiter</text>
+<text x="784" y="440" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">per bucket · 16 in flight</text>
+<rect x="64" y="528" width="224" height="80" rx="6" fill="#ffffff"/>
+<rect x="64" y="528" width="224" height="80" rx="6" fill="#1f2329" stroke="#4e5d6c" stroke-width="1" fill-opacity="0.05"/>
+<rect x="72" y="536" width="44" height="14" rx="2" fill="none" stroke="#4e5d6c" stroke-width="0.8" stroke-opacity="0.50"/>
+<text x="94" y="546" fill="#4e5d6c" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">SECRET</text>
+<text x="176" y="576" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Kubernetes Secret</text>
+<text x="176" y="596" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">api-key · app-key</text>
+<rect x="672" y="528" width="224" height="80" rx="6" fill="#ffffff"/>
+<rect x="672" y="528" width="224" height="80" rx="6" fill="#1f2329" stroke="#1f2329" stroke-width="1" fill-opacity="0.03" stroke-opacity="0.30"/>
+<rect x="680" y="536" width="28" height="14" rx="2" fill="none" stroke="#1f2329" stroke-width="0.8" stroke-opacity="0.22"/>
+<text x="694" y="546" fill="#5b6875" font-size="8" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">API</text>
+<text x="784" y="576" fill="#1f2329" font-size="16" font-weight="600" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif" text-anchor="middle">Datadog API</text>
+<text x="784" y="596" fill="#4e5d6c" font-size="12" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">site or https address</text>
+<line x1="40" y1="640" x2="920" y2="640" stroke="#1f2329" stroke-width="0.8" stroke-opacity="0.10"/>
+<text x="40" y="670" fill="#4e5d6c" font-size="9" font-family="'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace" letter-spacing="0.18em">LEGEND</text>
+<rect x="112" y="660" width="16" height="12" rx="2" fill="#00796b" stroke="#00796b" stroke-width="1" fill-opacity="0.08"/>
+<text x="136" y="670" fill="#4e5d6c" font-size="10" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Data sources</text>
+<rect x="228" y="660" width="16" height="12" rx="2" fill="#ffffff" stroke="#1f2329" stroke-width="1"/>
+<text x="252" y="670" fill="#4e5d6c" font-size="10" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Plugin part</text>
+<rect x="340" y="660" width="16" height="12" rx="2" fill="#4e5d6c" stroke="#5b6875" stroke-width="1" fill-opacity="0.10"/>
+<text x="364" y="670" fill="#4e5d6c" font-size="10" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Configuration</text>
+<rect x="464" y="660" width="16" height="12" rx="2" fill="#1f2329" stroke="#4e5d6c" stroke-width="1" fill-opacity="0.05"/>
+<text x="488" y="670" fill="#4e5d6c" font-size="10" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Secret store</text>
+<rect x="580" y="660" width="16" height="12" rx="2" fill="#1f2329" stroke="#1f2329" stroke-width="1" fill-opacity="0.03" stroke-opacity="0.30"/>
+<text x="604" y="670" fill="#4e5d6c" font-size="10" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">External API</text>
+<line x1="696" y1="666" x2="720" y2="666" stroke="#2e5aa8" stroke-width="1.2" marker-end="url(#architecture-arrow-link)"/>
+<text x="728" y="670" fill="#4e5d6c" font-size="10" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">HTTPS call</text>
+<line x1="808" y1="666" x2="832" y2="666" stroke="#4e5d6c" stroke-width="1.2" stroke-dasharray="4,3" marker-end="url(#architecture-arrow)"/>
+<text x="840" y="670" fill="#4e5d6c" font-size="10" font-family="'Work Sans', system-ui, -apple-system, 'Segoe UI', sans-serif">Return</text>
+</svg>

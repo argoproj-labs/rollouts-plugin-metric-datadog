@@ -1,0 +1,48 @@
+site_name: Argo Rollouts Datadog metric plugin
+site_url: https://rollouts-plugin-metric-datadog.readthedocs.io/
+repo_url: https://github.com/argoproj-labs/rollouts-plugin-metric-datadog
+theme:
+  name: material
+  features:
+  - navigation.sections
+  font:
+    text: Work Sans
+  palette:
+  - primary: teal
+    scheme: default
+    toggle:
+      icon: material/toggle-switch-off-outline
+      name: Switch to dark mode
+  - scheme: slate
+    toggle:
+      icon: material/toggle-switch
+      name: Switch to light mode
+markdown_extensions:
+- admonition
+- pymdownx.highlight
+- pymdownx.superfences
+- toc:
+    permalink: true
+nav:
+- Overview: index.md
+- How-to guides:
+  - Install the plugin: how-to/install.md
+  - Migrate from the web provider: how-to/migrate-web-provider.md
+  - Gate a rollout on Datadog monitors: how-to/gate-on-monitors.md
+  - Gate a rollout on SLOs: how-to/gate-on-slos.md
+  - Gate a rollout on a metric query: how-to/gate-on-metrics.md
+  - Combine monitors and SLOs: how-to/combine-sources.md
+  - Tune timeouts for rate limits: how-to/tune-rate-limits.md
+- Reference:
+  - Configuration: reference/configuration.md
+  - Result shapes and metadata: reference/results.md
+  - Troubleshooting: reference/troubleshooting.md
+- Explanation:
+  - About the result model: explanation/result-model.md
+  - About credentials and the secretRef risk: explanation/credentials.md
+  - About rate limiting and caching: explanation/rate-limiting.md
+- Project:
+  - Contributing: CONTRIBUTING.md
+  - Design spec: ARCHITECTURE.md
+exclude_docs: |
+  requirements.txt

@@ -18,7 +18,7 @@ make release    # linux/darwin × amd64/arm64, outputs to dist/
 make test       # go test ./... -race -count=1
 ```
 
-Tests are run with the race detector. `Run`-level tests guard against ambient `DD_API_KEY` / `DD_APP_KEY` environment variables — unset them before running locally if present.
+The tests run with the race detector. If `DD_API_KEY` or `DD_APP_KEY` is set, the `Run`-level tests skip or fail fast, so unset both before you run the tests locally.
 
 To run a single package or test:
 
@@ -41,7 +41,7 @@ Each source lives in its own file under `internal/datasource/` and implements tw
 2. Add a case for it in `internal/datasource/select.go`'s `Select()` function.
 3. Add config fields in `internal/config/config.go` and validation in `ParseConfig`.
 
-The core plugin (`internal/plugin/plugin.go`) does not change — rate-limiting, caching, and credential resolution are all handled there automatically.
+You do not change the core plugin (`internal/plugin/plugin.go`). It already handles rate limiting, caching, and credential resolution for every source.
 
 ## Sign your commits (DCO)
 
@@ -60,4 +60,4 @@ git config core.hooksPath .githooks
 1. Fork the repo and create a branch from `main`.
 2. Make your changes and ensure `make test`, `make vet`, and `golangci-lint run` all pass.
 3. Sign off every commit (see above).
-4. Open a pull request — CI runs the same checks automatically.
+4. Open a pull request. CI runs the same checks.
