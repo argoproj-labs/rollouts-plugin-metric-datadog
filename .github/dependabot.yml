@@ -10,9 +10,16 @@ updates:
       # cgo-only dep that `go mod tidy` strips and that breaks the -race build;
       # kept pinned manually (see Makefile), so Dependabot must not touch it.
       - dependency-name: "github.com/DataDog/zstd"
+    # Minor and patch bumps share one PR; each major bump gets its own PR.
+    groups:
+      gomod-minor-patch:
+        update-types: ["minor", "patch"]
 
   # GitHub Actions used in .github/workflows
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions-minor-patch:
+        update-types: ["minor", "patch"]
