@@ -7,6 +7,7 @@ import (
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	datadogV1 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
+	ddinternal "github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datadog"
 )
 
 type monitorSource struct{}
@@ -22,9 +23,9 @@ func (monitorSource) Key(cfg *config.Config) string {
 func (monitorSource) Query(ctx context.Context, client *datadog.APIClient, cfg *config.Config) (Result, error) {
 	api := datadogV1.NewMonitorsApi(client)
 	if cfg.Monitor.ID != nil {
-		mon, _, err := api.GetMonitor(ctx, *cfg.Monitor.ID)
+		mon, httpResp, err := api.GetMonitor(ctx, *cfg.Monitor.ID)
 		if err != nil {
-			return Result{}, fmt.Errorf("datadog GetMonitor: %w", err)
+			return Result{}, ddinternal.MarkTransient(fmt.Errorf("datadog GetMonitor: %w", err), httpResp)
 		}
 		m, err := structToMap(mon)
 		if err != nil {
@@ -35,9 +36,9 @@ func (monitorSource) Query(ctx context.Context, client *datadog.APIClient, cfg *
 
 	query := JoinSearchQuery(cfg.Tags, cfg.Monitor.Query)
 	opts := *datadogV1.NewSearchMonitorGroupsOptionalParameters().WithQuery(query)
-	resp, _, err := api.SearchMonitorGroups(ctx, opts)
+	resp, httpResp, err := api.SearchMonitorGroups(ctx, opts)
 	if err != nil {
-		return Result{}, fmt.Errorf("datadog SearchMonitorGroups: %w", err)
+		return Result{}, ddinternal.MarkTransient(fmt.Errorf("datadog SearchMonitorGroups: %w", err), httpResp)
 	}
 	m, err := structToMap(resp)
 	if err != nil {

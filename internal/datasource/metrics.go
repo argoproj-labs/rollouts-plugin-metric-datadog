@@ -9,6 +9,7 @@ import (
 	datadogV1 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	datadogV2 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV2"
 	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
+	ddinternal "github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datadog"
 )
 
 type metricsSource struct{}
@@ -83,9 +84,9 @@ func queryV2(ctx context.Context, client *datadog.APIClient, cfg *config.Config,
 	}
 
 	api := datadogV2.NewMetricsApi(client)
-	resp, _, err := api.QueryScalarData(ctx, body)
+	resp, httpResp, err := api.QueryScalarData(ctx, body)
 	if err != nil {
-		return Result{}, fmt.Errorf("datadog v2 scalar query: %w", err)
+		return Result{}, ddinternal.MarkTransient(fmt.Errorf("datadog v2 scalar query: %w", err), httpResp)
 	}
 	value := extractV2Scalar(resp)
 	return Result{Value: value, Metadata: map[string]string{
@@ -121,9 +122,9 @@ func extractV2Scalar(resp datadogV2.ScalarFormulaQueryResponse) interface{} {
 func queryV1(ctx context.Context, client *datadog.APIClient, cfg *config.Config, win TimeWindow) (Result, error) {
 	q := MergeScopeTags(cfg.Metrics.Query, cfg.Tags)
 	api := datadogV1.NewMetricsApi(client)
-	resp, _, err := api.QueryMetrics(ctx, win.FromUnixSeconds(), win.ToUnixSeconds(), q)
+	resp, httpResp, err := api.QueryMetrics(ctx, win.FromUnixSeconds(), win.ToUnixSeconds(), q)
 	if err != nil {
-		return Result{}, fmt.Errorf("datadog v1 query: %w", err)
+		return Result{}, ddinternal.MarkTransient(fmt.Errorf("datadog v1 query: %w", err), httpResp)
 	}
 	value := extractV1Latest(resp)
 	return Result{Value: value, Metadata: map[string]string{

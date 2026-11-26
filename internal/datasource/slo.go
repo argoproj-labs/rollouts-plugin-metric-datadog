@@ -8,6 +8,7 @@ import (
 	"github.com/DataDog/datadog-api-client-go/v2/api/datadog"
 	datadogV1 "github.com/DataDog/datadog-api-client-go/v2/api/datadogV1"
 	"github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/config"
+	ddinternal "github.com/argoproj-labs/rollouts-plugin-metric-datadog/internal/datadog"
 )
 
 type sloSource struct{}
@@ -28,9 +29,9 @@ func (sloSource) Query(ctx context.Context, client *datadog.APIClient, cfg *conf
 		if err != nil {
 			return Result{}, err
 		}
-		resp, _, err := api.GetSLOHistory(ctx, *cfg.SLO.ID, win.FromUnixSeconds(), win.ToUnixSeconds())
+		resp, httpResp, err := api.GetSLOHistory(ctx, *cfg.SLO.ID, win.FromUnixSeconds(), win.ToUnixSeconds())
 		if err != nil {
-			return Result{}, fmt.Errorf("datadog GetSLOHistory: %w", err)
+			return Result{}, ddinternal.MarkTransient(fmt.Errorf("datadog GetSLOHistory: %w", err), httpResp)
 		}
 		var value interface{}
 		if resp.Data != nil && resp.Data.Overall != nil {
@@ -43,9 +44,9 @@ func (sloSource) Query(ctx context.Context, client *datadog.APIClient, cfg *conf
 
 	query := JoinSearchQuery(cfg.Tags, cfg.SLO.Query)
 	opts := *datadogV1.NewSearchSLOOptionalParameters().WithQuery(query)
-	resp, _, err := api.SearchSLO(ctx, opts)
+	resp, httpResp, err := api.SearchSLO(ctx, opts)
 	if err != nil {
-		return Result{}, fmt.Errorf("datadog SearchSLO: %w", err)
+		return Result{}, ddinternal.MarkTransient(fmt.Errorf("datadog SearchSLO: %w", err), httpResp)
 	}
 	flat, err := flattenSLOSearch(resp)
 	if err != nil {

@@ -36,6 +36,8 @@ In the tables, `<ns>`, `<name>`, and similar words stand for values from your co
 
 Each Datadog error starts with the name of the call: `datadog v2 scalar query:`, `datadog v1 query:`, `datadog SearchMonitorGroups:`, `datadog GetMonitor:`, `datadog SearchSLO:`, or `datadog GetSLOHistory:`.
 
+If `metadata.error_class` is `datadog`, Datadog itself failed, and the phase follows `onError`. A measurement can then be `Successful` or `Inconclusive` and still have an error in `message`. See [Datadog errors (onError)](configuration.md#datadog-errors-onerror).
+
 | Message ends with | Cause | Fix |
 |---|---|---|
 | `401 Unauthorized` or `403 Forbidden` | Datadog rejected the API key or the application key. The keys can belong to another site, or the application key scopes do not allow the call. | Make sure that both keys are correct, that `site` matches your Datadog organization, and that the application key can read the source. |

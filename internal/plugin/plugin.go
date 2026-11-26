@@ -4,6 +4,7 @@ package plugin
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -122,6 +123,10 @@ func (g *RpcPlugin) Run(analysisRun *v1alpha1.AnalysisRun, metric v1alpha1.Metri
 		r, err = ds.Query(ctx, client, cfg)
 		value, meta, src = r.Value, r.Metadata, "fresh"
 	}
+	var te *ddinternal.TransientError
+	if errors.As(err, &te) {
+		return finish(onDatadogError(cfg.OnError, m, err))
+	}
 	if err != nil {
 		return finish(metricutil.MarkMeasurementError(m, err))
 	}
@@ -171,6 +176,23 @@ func (g *RpcPlugin) transport() http.RoundTripper {
 		return nil
 	}
 	return g.limiter.Transport()
+}
+
+// onDatadogError sets the phase for a Datadog-side (transient) error from the
+// onError option. Setup errors never reach here, so they always stay Error.
+func onDatadogError(onError string, m v1alpha1.Measurement, err error) v1alpha1.Measurement {
+	switch onError {
+	case "inconclusive":
+		m.Phase = v1alpha1.AnalysisPhaseInconclusive
+		m.Message = err.Error()
+	case "pass":
+		m.Phase = v1alpha1.AnalysisPhaseSuccessful
+		m.Message = err.Error()
+	default:
+		m = metricutil.MarkMeasurementError(m, err)
+	}
+	m.Metadata = map[string]string{"error_class": "datadog"}
+	return m
 }
 
 // finish stamps FinishedAt on a Measurement if not already set.
