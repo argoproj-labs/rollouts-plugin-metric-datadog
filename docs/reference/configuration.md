@@ -15,6 +15,7 @@ provider:
         name: "my-dd-secret"         # Name of the Kubernetes Secret containing api-key/app-key
         namespaced: false            # If true, read from the AnalysisRun's namespace instead of the controller's
       timeoutSeconds: 30             # Per-measurement HTTP timeout. Default: 30s. See Timeout note below.
+      onError: error                 # Phase when Datadog itself fails: error | inconclusive | pass. Default: error
 
       # --- Shared tag filter ---
       tags: ["service:my-service", "env:production"]
@@ -82,6 +83,25 @@ To route to a custom proxy or a local test server, use `address` instead of `sit
 `timeoutSeconds` sets the deadline for each measurement. The default is 30 seconds.
 
 The SDK retries 429 and 5xx responses up to `retry.maxRetries` times. On a 429 response, it waits for the time in the `X-RateLimit-Reset` header. The SDK stops retrying after four fifths of `timeoutSeconds`, which is 24 seconds at the default. To size these values, see [Tune timeouts for rate limits](../how-to/tune-rate-limits.md).
+
+## Datadog errors (onError)
+
+`onError` sets the measurement phase when Datadog itself fails. A Datadog failure is a 5xx response, a 429 response after the SDK retries, a timeout, or a dropped connection.
+
+| Value | Phase | Rollout effect |
+|---|---|---|
+| `error` (default) | `Error` | Counts toward `consecutiveErrorLimit` (default 4). Then the rollout aborts. |
+| `inconclusive` | `Inconclusive` | Pauses the rollout until a person promotes or aborts it. |
+| `pass` | `Successful` | The step continues. |
+
+For all three values, the measurement keeps the error text in `message` and sets `metadata.error_class` to `datadog`. An operator can then see that a pass was not a real pass.
+
+Setup errors always give `Error`, whatever the value of `onError`. A setup error is a bad configuration, missing credentials, or a 400, 401, 403, or 404 response. A DNS failure, a TLS failure, or a refused connection is also a setup error, because it usually means a wrong `address`. If a condition cannot evaluate the result, the phase is also `Error`.
+
+Two Argo Rollouts defaults change the effect of `onError`:
+
+- `inconclusiveLimit` defaults to 0. With `onError: inconclusive`, one Datadog failure pauses the rollout. To allow more failures, raise `inconclusiveLimit`.
+- If a metric has `count: 1`, `onError: pass` lets one Datadog failure pass the whole analysis.
 
 ## Metrics source
 

@@ -98,6 +98,8 @@ Dependabot ignores this dependency for the same reason. See `.github/dependabot.
 
 Any error in `Run()` must produce an `Error` measurement phase, not `Failed`. `failureLimit` defaults to 0. If you map a Datadog throttle to `Failed`, the rollout aborts on infrastructure flakiness instead of a real regression.
 
+Datadog-side errors (marked with `ddinternal.MarkTransient`) follow the `onError` option, which allows only `Error`, `Inconclusive`, or `Successful`.
+
 ### Test guard: never remove the `DD_*` env check
 
 When `DD_API_KEY` or `DD_APP_KEY` is set in the environment, `Run`-level tests skip or fail fast. When you add cases, keep that guard.

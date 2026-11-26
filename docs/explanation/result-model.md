@@ -24,7 +24,9 @@ The monitor search result drops one field, `counts.tag`. Datadog computes that f
 
 ## Errors are never failures
 
-The plugin turns every error into an `Error` measurement. This covers a bad configuration, a missing Secret, a Datadog error or timeout, and a condition that cannot evaluate the result. For the reason, see [About rate limiting and caching](rate-limiting.md#why-throttling-gives-error-not-failed).
+By default, the plugin turns every error into an `Error` measurement. This covers a bad configuration, a missing Secret, a Datadog error or timeout, and a condition that cannot evaluate the result. For the reason, see [About rate limiting and caching](rate-limiting.md#why-throttling-gives-error-not-failed).
+
+If Datadog itself fails, the `onError` option can change the phase to `Inconclusive` or `Successful`. No value gives `Failed`. Setup errors always stay `Error`. For details, see [Datadog errors (onError)](../reference/configuration.md#datadog-errors-onerror).
 
 Empty results follow the source type. A metrics query or SLO by-id call with no data returns `nil`. Argo Rollouts compiles each condition against the type of `result`. A plain comparison with `nil` therefore ends in an `Error` with the message `metric result is nil or empty`. To choose a value for no data, use the `default` function, for example `default(result, 1.0) >= 0.95`.
 

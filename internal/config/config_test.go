@@ -115,3 +115,26 @@ func TestWarnings(t *testing.T) {
 		})
 	}
 }
+
+func TestParseConfig_OnError(t *testing.T) {
+	cases := []struct {
+		raw     string
+		want    string
+		wantErr bool
+	}{
+		{`{"monitor":{"id":1}}`, "error", false},
+		{`{"onError":"error","monitor":{"id":1}}`, "error", false},
+		{`{"onError":"inconclusive","monitor":{"id":1}}`, "inconclusive", false},
+		{`{"onError":"pass","monitor":{"id":1}}`, "pass", false},
+		{`{"onError":"fail","monitor":{"id":1}}`, "", true},
+	}
+	for _, tc := range cases {
+		c, err := ParseConfig(metricWith(t, tc.raw))
+		if tc.wantErr {
+			assert.ErrorContains(t, err, "onError", tc.raw)
+			continue
+		}
+		require.NoError(t, err, tc.raw)
+		assert.Equal(t, tc.want, c.OnError, tc.raw)
+	}
+}

@@ -21,6 +21,7 @@ type Config struct {
 	Tags           []string     `json:"tags,omitempty"`
 	Cache          *CacheConfig `json:"cache,omitempty"`
 	Retry          *RetryConfig `json:"retry,omitempty"`
+	OnError        string       `json:"onError,omitempty"` // error|inconclusive|pass, default error
 
 	Metrics *MetricsConfig `json:"metrics,omitempty"`
 	Monitor *MonitorConfig `json:"monitor,omitempty"`
@@ -77,6 +78,9 @@ func ParseConfig(metric v1alpha1.Metric) (*Config, error) {
 }
 
 func (c *Config) applyDefaults() {
+	if c.OnError == "" {
+		c.OnError = "error"
+	}
 	if c.Metrics != nil && c.Metrics.APIVersion == "" {
 		c.Metrics.APIVersion = "v2"
 	}
@@ -115,6 +119,12 @@ func (c *Config) Validate() error {
 
 	if c.SecretRef != nil && c.SecretRef.Namespaced && c.SecretRef.Name == "" {
 		return fmt.Errorf("secretRef.namespaced=true requires a non-empty name")
+	}
+
+	switch c.OnError {
+	case "error", "inconclusive", "pass":
+	default:
+		return fmt.Errorf("onError must be error, inconclusive, or pass, got %q", c.OnError)
 	}
 
 	byID := (c.Monitor != nil && c.Monitor.ID != nil) || (c.SLO != nil && c.SLO.ID != nil)

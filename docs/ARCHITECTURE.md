@@ -141,6 +141,7 @@ provider:
         name: my-datadog-secret
         namespaced: false
       timeoutSeconds: 30             # optional; default 30
+      onError: error                 # optional; error | inconclusive | pass (see §9)
       # rateLimit / cache / retry: fleet-scale controls (all optional) — see §15.4
 
       # --- shared tag filter, applied per source (see §7) ---
@@ -288,6 +289,7 @@ Prefer `site`, mapped to the SDK `datadog.ContextServerVariables{"site": …}`. 
 ## 9. Error handling and empty results
 
 - Any SDK error, `401`/`403` auth failure, or parse error → `metricutil.MarkMeasurementError(m, err)` (`Phase: Error` + message). This returns the measurement by value, so you must capture the result (`m = metricutil.MarkMeasurementError(m, err)`). The `consecutiveErrorLimit` of the controller (default 4) governs transient-error tolerance.
+- Datadog-side errors follow the top-level `onError` option (`error` default, `inconclusive`, or `pass`). A Datadog-side error is a 5xx, a 429 after SDK retries, a timeout, a connection reset, or an unexpected EOF. Each data source wraps its SDK error with `ddinternal.MarkTransient(err, resp)`, and `Run()` checks for `*ddinternal.TransientError`. Every other error, including 4xx, DNS, TLS, and refused connections, stays `Error`. No value maps to `Failed`. The measurement keeps the error in `Message` and sets `Metadata["error_class"] = "datadog"`.
 - The HTTP timeout default is 30s, because aggregations are slower than point queries. You can override it with the top-level `timeoutSeconds`.
 - Aggregation latency/throttling (apm/logs). Wide windows, high-cardinality filters, or Datadog rate limiting (`429`) can make a synchronous `AggregateSpans`/`AggregateLogs` call exceed the timeout. The timeout maps to `Phase: Error` and consumes `consecutiveErrorLimit`. As a result, a canary fails on Datadog latency, not on a real regression. §15 gives the defenses in detail: a shared client-side rate limiter, header-adaptive control, request coalescing plus a short-TTL cache, and header-aware SDK retry. The defenses never produce `Failed`.
 - Empty results:
